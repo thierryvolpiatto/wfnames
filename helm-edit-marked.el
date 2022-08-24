@@ -62,13 +62,13 @@ Special commands:
 (setq helm-find-files-actions
       (helm-append-at-nth
        helm-find-files-actions
-       '(("Edit marked files" . helm-ff-edit-marked-files)) 2))
+       '(("Edit filenames" . helm-ff-edit-marked-files)) 2))
 
-(setq helm-source-find-files nil)
+;; (setq helm-source-find-files nil)
 
 (defun helm-ff-edit-marked-commit-buffer ()
   (interactive)
-  (let ((renamed 0) suspended)
+  (let ((renamed 0) delayed)
     (cl-labels ((commit ()
                   (with-current-buffer helm-ff-edit-buffer
                     (goto-char (point-min))
@@ -78,20 +78,20 @@ Special commands:
                                   (point-at-bol) (point-at-eol))))
                         (unless (string= old new) ; not modified.
                           (if (and (file-exists-p new)
-                                   (not (assoc new suspended)))
+                                   (not (assoc new delayed)))
                               (let ((tmpfile (make-temp-name new)))
-                                (push (cons new tmpfile) suspended)
+                                (push (cons new tmpfile) delayed)
                                 (rename-file new tmpfile)
                                 (delete-region (point-at-bol) (point-at-eol))
                                 (insert (propertize new 'old-name tmpfile)))
                             (rename-file old new)
                             (add-text-properties
                              (point-at-bol) (point-at-eol) `(old-name ,new))
-                            (setq suspended
-                                  (delete (assoc new suspended) suspended))
+                            (setq delayed
+                                  (delete (assoc new delayed) delayed))
                             (cl-incf renamed))))
                       (forward-line 1))
-                    (when suspended (commit)))))
+                    (when delayed (commit)))))
       (commit)
       (message "* Renamed %s file(s) " renamed)
       (kill-buffer helm-ff-edit-buffer))))
