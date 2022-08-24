@@ -55,10 +55,16 @@ Special commands:
 ;; /home/thierry/tmp/test005.txt
 
 
-;; /home/thierry/tmp/test005.txt
-;; /home/thierry/tmp/test004.txt
-;; /home/thierry/tmp/test003.txt
-;; /home/thierry/tmp/test002.txt
+;; /home/thierry/tmp/test001.txt => /home/thierry/tmp/test005.txt
+;; /home/thierry/tmp/test002.txt => /home/thierry/tmp/test004.txt
+;; /home/thierry/tmp/test004.txt => /home/thierry/tmp/test002.txt
+
+(setq helm-find-files-actions
+      (helm-append-at-nth
+       helm-find-files-actions
+       '(("Edit marked files" . helm-ff-edit-marked-files)) 2))
+
+(setq helm-source-find-files nil)
 
 (defun helm-ff-edit-marked-commit-buffer ()
   (interactive)
@@ -71,12 +77,18 @@ Special commands:
                             (new (buffer-substring-no-properties
                                   (point-at-bol) (point-at-eol))))
                         (unless (string= old new) ; not modified.
-                          (if (file-exists-p new)
-                              (push new suspended)
+                          (if (and (file-exists-p new)
+                                   (not (assoc new suspended)))
+                              (let ((tmpfile (make-temp-name new)))
+                                (push (cons new tmpfile) suspended)
+                                (rename-file new tmpfile)
+                                (delete-region (point-at-bol) (point-at-eol))
+                                (insert (propertize new 'old-name tmpfile)))
                             (rename-file old new)
                             (add-text-properties
                              (point-at-bol) (point-at-eol) `(old-name ,new))
-                            (setq suspended (delete new suspended))
+                            (setq suspended
+                                  (delete (assoc new suspended) suspended))
                             (cl-incf renamed))))
                       (forward-line 1))
                     (when suspended (commit)))))
