@@ -64,8 +64,8 @@ Special commands:
         (cl-loop for file in marked
                  do (insert (propertize
                              file 'old-name file 'face 'helm-ff-file)
-                            "\n"))))
-      (helm-ff-edit-mode)
+                            "\n")))
+      (helm-ff-edit-mode))
     (switch-to-buffer helm-ff-edit-buffer)))
 
 (defun helm-ff-edit-marked-commit-buffer ()
