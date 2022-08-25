@@ -1,6 +1,11 @@
-;;; helm-edit-marked.el -- Edit marked files.
+;;; helm-edit-marked.el -- Edit marked files. -*- lexical-binding:t -*-
 ;;
-(defvar helm-ff-edit-buffer "*edit hff marked*")
+
+;;; Code:
+
+(require 'helm)
+
+(defvar helm-ff-edit-buffer "*Edit hff marked*")
 (defvar helm-ff--edit-marked-old-files nil)
 
 (defvar helm-ff-edit-mode-map
@@ -57,13 +62,6 @@ Special commands:
       (helm-ff-edit-mode)
       (set (make-local-variable 'helm-ff--edit-marked-old-files) marked))
     (switch-to-buffer helm-ff-edit-buffer)))
-
-(setq helm-find-files-actions
-      (helm-append-at-nth
-       helm-find-files-actions
-       '(("Edit filenames" . helm-ff-edit-marked-files)) 2))
-
-;; (setq helm-source-find-files nil)
 
 (defun helm-ff-edit-marked-commit-buffer ()
   (interactive)
