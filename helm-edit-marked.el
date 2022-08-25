@@ -7,9 +7,11 @@
 
 (defvar helm-ff-edit-buffer "*Edit hff marked*")
 
-;; TODO Handle backing up and asking when overwriting
+;; TODO:
+;; - Handle backing up and asking when overwriting
 ;; (defvar helm-ff-edit-marked-interactive-rename nil)
 ;; (defvar helm-ff-edit-marked-make-backup nil)
+;; - Create parent directories
 ;; (defvar helm-ff-edit-marked-create-parent-directories nil)
 
 (defvar helm-ff-edit-mode-map
