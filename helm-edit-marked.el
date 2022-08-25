@@ -6,7 +6,6 @@
 (require 'helm)
 
 (defvar helm-ff-edit-buffer "*Edit hff marked*")
-(defvar helm-ff--edit-marked-old-files nil)
 
 (defvar helm-ff-edit-mode-map
   (let ((map (make-sparse-keymap)))
@@ -60,7 +59,6 @@ Special commands:
                              file 'old-name file 'face 'helm-ff-file)
                             "\n")))
       (helm-ff-edit-mode)
-      (set (make-local-variable 'helm-ff--edit-marked-old-files) marked))
     (switch-to-buffer helm-ff-edit-buffer)))
 
 (defun helm-ff-edit-marked-commit-buffer ()
