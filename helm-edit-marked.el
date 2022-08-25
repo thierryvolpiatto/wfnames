@@ -56,7 +56,7 @@ Special commands:
                    (overlay-put ov 'evaporate t))))))))
 
 (defun helm-ff-edit-marked-files (_candidate)
-  (let ((marked (helm-marked-candidates :with-wildcard t)))
+  (let ((marked (helm-marked-candidates)))
     (with-current-buffer (get-buffer-create helm-ff-edit-buffer)
       (save-excursion
         (cl-loop for file in marked
