@@ -27,7 +27,7 @@ Special commands:
 "
   (add-hook 'after-change-functions #'helm-ff-edit-marked-after-change-hook nil t))
 
-(defun helm-ff-edit-marked-after-change-hook (beg end _leng-before)
+(defun helm-ff-edit-marked-after-change-hook (beg _end _leng-before)
   (with-current-buffer helm-ff-edit-buffer
     (save-excursion
       (save-match-data
