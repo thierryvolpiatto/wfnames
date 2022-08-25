@@ -1,4 +1,4 @@
-;;; Edit marked files
+;;; helm-edit-marked.el -- Edit marked files.
 ;;
 (defvar helm-ff-edit-buffer "*edit hff marked*")
 (defvar helm-ff--edit-marked-old-files nil)
@@ -20,22 +20,31 @@ Special commands:
 
 (defun helm-ff-edit-marked-after-change-hook (beg end _leng-before)
   (with-current-buffer helm-ff-edit-buffer
-    (let ((old (get-text-property (point-at-bol) 'old-name))
-          (new (buffer-substring-no-properties
-                (point-at-bol) (point-at-eol)))
-          ov)
-      (cl-loop for o in (overlays-in (point-at-bol) (point-at-eol))
-               when (overlay-get o 'hff-changed)
-               do (delete-overlay o))
-      (unless (string= old new)
-        (setq ov (make-overlay (point-at-bol) (point-at-eol)))
-        (overlay-put ov 'face
-                     `(:background ,(if (file-exists-p new)
+    (save-excursion
+      (save-match-data
+        (goto-char beg)
+        (let* ((bol (point-at-bol))
+               (eol (point-at-eol))
+               (old (get-text-property bol 'old-name))
+              (new  (buffer-substring-no-properties bol eol))
+              ov face)
+          (setq face `(:background ,(if (file-exists-p new)
                                         "DarkOrange" "LightBlue")))
-        (overlay-put ov 'hff-changed t)
-        (setq ov (make-overlay beg end))
-        (overlay-put ov 'face 'font-lock-variable-name-face)
-        (overlay-put ov 'hff-changed t)))))
+          (cl-loop for o in (overlays-in bol eol)
+                   when (overlay-get o 'hff-changed)
+                   return (setq ov o))
+          (cond ((string= old new)
+                 (cl-loop for o in (overlays-in bol eol)
+                          when (overlay-get o 'hff-changed)
+                          do (delete-overlay o)))
+                (ov
+                 (move-overlay ov bol eol)
+                 (overlay-put ov 'face face))
+                (t (setq ov (make-overlay bol eol))
+                   (overlay-put ov 'face face)
+                   (overlay-put ov 'hff-changed t)
+                   (overlay-put ov 'priority 0)
+                   (overlay-put ov 'evaporate t))))))))
 
 (defun helm-ff-edit-marked-files (_candidate)
   (let ((marked (helm-marked-candidates :with-wildcard t)))
@@ -48,17 +57,6 @@ Special commands:
       (helm-ff-edit-mode)
       (set (make-local-variable 'helm-ff--edit-marked-old-files) marked))
     (switch-to-buffer helm-ff-edit-buffer)))
-
-;; /home/thierry/tmp/test001.txt
-;; /home/thierry/tmp/test002.txt
-;; /home/thierry/tmp/test003.txt
-;; /home/thierry/tmp/test004.txt
-;; /home/thierry/tmp/test005.txt
-
-
-;; /home/thierry/tmp/test001.txt => /home/thierry/tmp/test005.txt
-;; /home/thierry/tmp/test002.txt => /home/thierry/tmp/test004.txt
-;; /home/thierry/tmp/test004.txt => /home/thierry/tmp/test002.txt
 
 (setq helm-find-files-actions
       (helm-append-at-nth
@@ -114,3 +112,7 @@ Special commands:
             (insert (propertize
                      old 'old-name old 'face 'helm-ff-file)))
           (forward-line 1))))))
+
+(provide 'helm-edit-marked)
+
+;;; helm-edit-marked.el ends here
