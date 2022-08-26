@@ -93,6 +93,8 @@ Special commands:
                                               helm-ff--edit-marked-old-files)
                                       (not (assoc new delayed)))
                                  (let ((tmpfile (make-temp-name old)))
+                                   (when (file-directory-p new)
+                                     (setq tmpfile (file-name-as-directory tmpfile)))
                                    (push (cons new tmpfile) delayed)
                                    (rename-file old tmpfile)
                                    (add-text-properties
@@ -104,6 +106,8 @@ Special commands:
                                 ((and (file-exists-p new)
                                       (not (assoc new delayed)))
                                  (let ((tmpfile (make-temp-name new)))
+                                   (when (file-directory-p new)
+                                     (setq tmpfile (file-name-as-directory tmpfile)))
                                    (push (cons new tmpfile) delayed)
                                    (rename-file new tmpfile)))
                                 ;; Now really rename files.
@@ -113,7 +117,10 @@ Special commands:
                                    (let ((basedir (helm-basedir new 'parent)))
                                      (unless (file-directory-p basedir)
                                        (mkdir basedir 'parents))))
-                                 (rename-file old new)
+                                 (rename-file
+                                  old (if (file-directory-p new)
+                                          (file-name-as-directory new)
+                                        new))
                                  (add-text-properties beg end `(old-name ,new))
                                  (let* ((assoc (assoc new delayed))
                                         (tmp   (cdr assoc)))
