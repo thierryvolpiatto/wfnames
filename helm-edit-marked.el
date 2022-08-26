@@ -82,7 +82,12 @@ Special commands:
                              (old (get-text-property (point) 'old-name))
                              (new (buffer-substring-no-properties beg end)))
                         (unless (string= old new) ; not modified.
-                          (cond ((and (file-exists-p new)
+                          (cond (;; New file exists and is one of the
+                                 ;; next files to rename, make a temp
+                                 ;; file of OLD and assign this temp
+                                 ;; file to OLD, then delay renaming
+                                 ;; to next turn.
+                                 (and (file-exists-p new)
                                       (member new
                                               helm-ff--edit-marked-old-files)
                                       (not (assoc new delayed)))
@@ -91,16 +96,23 @@ Special commands:
                                    (rename-file old tmpfile)
                                    (add-text-properties
                                     beg end `(old-name ,tmpfile))))
+                                ;; New file exists but is not part of
+                                ;; the next files to rename, make a
+                                ;; temp file of NEW and delay renaming
+                                ;; to next turn.
                                 ((and (file-exists-p new)
                                       (not (assoc new delayed)))
                                  (let ((tmpfile (make-temp-name new)))
                                    (push (cons new tmpfile) delayed)
                                    (rename-file new tmpfile)))
+                                ;; Now really rename files.
                                 (t
                                  (rename-file old new)
                                  (add-text-properties beg end `(old-name ,new))
                                  (let* ((assoc (assoc new delayed))
                                         (tmp   (cdr assoc)))
+                                   ;; The temp file was created in
+                                   ;; clause 2, delete it.
                                    (when (and tmp (file-exists-p tmp))
                                      (delete-file tmp))
                                    (setq delayed
