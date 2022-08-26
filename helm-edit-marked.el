@@ -7,7 +7,9 @@
 
 (defvar helm-ff-edit-buffer "*Edit hff marked*")
 (defvar helm-ff--edit-marked-old-files nil)
+
 (defvar helm-ff-edit-marked-create-parent-directories nil)
+(defvar helm-ff-edit-marked-interactive-rename nil)
 
 ;; TODO:
 ;; - Handle backing up and asking when overwriting
@@ -92,24 +94,38 @@ Special commands:
                                       (member new
                                               helm-ff--edit-marked-old-files)
                                       (not (assoc new delayed)))
-                                 (let ((tmpfile (make-temp-name old)))
-                                   (when (file-directory-p new)
-                                     (setq tmpfile (file-name-as-directory tmpfile)))
+                                 ;; Maybe ask
+                                 (if (or (null helm-ff-edit-marked-interactive-rename)
+                                         (y-or-n-p (format "File `%s' exists, overwrite? "
+                                                           new)))
+                                     (let ((tmpfile (make-temp-name old)))
+                                       (when (file-directory-p new)
+                                         (setq tmpfile (file-name-as-directory tmpfile)))
+                                       (push (cons new tmpfile) delayed)
+                                       (rename-file old tmpfile)
+                                       (add-text-properties
+                                        beg end `(old-name ,tmpfile)))
                                    (push (cons new tmpfile) delayed)
-                                   (rename-file old tmpfile)
                                    (add-text-properties
-                                    beg end `(old-name ,tmpfile))))
+                                    beg end '(old-name 'skip))))
                                 ;; New file exists but is not part of
                                 ;; the next files to rename, make a
                                 ;; temp file of NEW and delay renaming
                                 ;; to next turn.
                                 ((and (file-exists-p new)
                                       (not (assoc new delayed)))
-                                 (let ((tmpfile (make-temp-name new)))
-                                   (when (file-directory-p new)
-                                     (setq tmpfile (file-name-as-directory tmpfile)))
+                                 ;; Maybe ask.
+                                 (if (or (null helm-ff-edit-marked-interactive-rename)
+                                         (y-or-n-p (format "File `%s' exists, overwrite? "
+                                                           new)))
+                                     (let ((tmpfile (make-temp-name new)))
+                                       (when (file-directory-p new)
+                                         (setq tmpfile (file-name-as-directory tmpfile)))
+                                       (push (cons new tmpfile) delayed)
+                                       (rename-file new tmpfile))
                                    (push (cons new tmpfile) delayed)
-                                   (rename-file new tmpfile)))
+                                   (add-text-properties
+                                    beg end '(old-name 'skip))))
                                 ;; Now really rename files.
                                 (t
                                  (when helm-ff-edit-marked-create-parent-directories
