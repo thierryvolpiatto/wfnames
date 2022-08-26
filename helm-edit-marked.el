@@ -81,7 +81,7 @@ Special commands:
                              (end (point-at-eol))
                              (old (get-text-property (point) 'old-name))
                              (new (buffer-substring-no-properties beg end)))
-                        (unless (string= old new) ; not modified.
+                        (unless (string= old new) ; not modified, skip.
                           (cond (;; New file exists and is one of the
                                  ;; next files to rename, make a temp
                                  ;; file of OLD and assign this temp
@@ -106,11 +106,11 @@ Special commands:
                                    (add-text-properties
                                     beg end `(old-name ,new))
                                    (cl-incf skipped)))
-                                ;; New file exists but is not part of
-                                ;; the next files to rename, make a
-                                ;; temp file of NEW and delay renaming
-                                ;; to next turn.
-                                ((and (file-exists-p new)
+                                (;; New file exists but is not part of
+                                 ;; the next files to rename, make a
+                                 ;; temp file of NEW and delay renaming
+                                 ;; to next turn.
+                                 (and (file-exists-p new)
                                       (not (assoc new delayed)))
                                  ;; Maybe ask.
                                  (if (or (null helm-ff-edit-marked-interactive-rename)
@@ -125,8 +125,7 @@ Special commands:
                                    (add-text-properties
                                     beg end `(old-name ,new))
                                    (cl-incf skipped)))
-                                ;; Now really rename files.
-                                (t
+                                (t ; Now really rename files.
                                  (when helm-ff-edit-marked-create-parent-directories
                                    ;; Check if base directory of new exists.
                                    (let ((basedir (helm-basedir new 'parent)))
