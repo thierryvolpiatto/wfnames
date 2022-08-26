@@ -8,17 +8,17 @@
 (defvar helm-ff-edit-buffer "*Edit hff marked*")
 (defvar helm-ff--edit-marked-old-files nil)
 
-(defvar helm-ff-edit-marked-create-parent-directories nil)
-(defvar helm-ff-edit-marked-interactive-rename nil)
+(defvar helm-edit-marked-create-parent-directories nil)
+(defvar helm-edit-marked-interactive-rename nil)
 
 ;; TODO:
 ;; - Handle backing up when overwriting
-;; (defvar helm-ff-edit-marked-make-backup nil)
+;; (defvar helm-edit-marked-make-backup nil)
 
 (defvar helm-ff-edit-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-x C-s") #'helm-ff-edit-marked-commit-buffer)
-    (define-key map (kbd "C-c C-k") #'helm-ff-edit-marked-revert-changes)
+    (define-key map (kbd "C-x C-s") #'helm-edit-marked-commit-buffer)
+    (define-key map (kbd "C-c C-k") #'helm-edit-marked-revert-changes)
     map))
 
 (define-derived-mode helm-ff-edit-mode text-mode
@@ -28,9 +28,9 @@
 Special commands:
 \\{helm-ff-edit-mode-map}
 "
-  (add-hook 'after-change-functions #'helm-ff-edit-marked-after-change-hook nil t))
+  (add-hook 'after-change-functions #'helm-edit-marked-after-change-hook nil t))
 
-(defun helm-ff-edit-marked-after-change-hook (beg _end _leng-before)
+(defun helm-edit-marked-after-change-hook (beg _end _leng-before)
   (with-current-buffer helm-ff-edit-buffer
     (save-excursion
       (save-match-data
@@ -58,19 +58,23 @@ Special commands:
                    (overlay-put ov 'priority 0)
                    (overlay-put ov 'evaporate t))))))))
 
+(defun helm-edit-marked-setup-buffer (files)
+  (with-current-buffer (get-buffer-create helm-ff-edit-buffer)
+    (save-excursion
+      (cl-loop for file in files
+               do (insert (propertize
+                           file 'old-name file 'face 'helm-ff-file)
+                          "\n")))
+    (helm-ff-edit-mode)
+    (set (make-local-variable 'helm-ff--edit-marked-old-files) files)))
+
+;; This is the action for HFF.
 (defun helm-ff-edit-marked-files (_candidate)
   (let ((marked (helm-marked-candidates)))
-    (with-current-buffer (get-buffer-create helm-ff-edit-buffer)
-      (save-excursion
-        (cl-loop for file in marked
-                 do (insert (propertize
-                             file 'old-name file 'face 'helm-ff-file)
-                            "\n")))
-      (helm-ff-edit-mode)
-      (set (make-local-variable 'helm-ff--edit-marked-old-files) marked))
+    (helm-edit-marked-setup-buffer marked)
     (switch-to-buffer helm-ff-edit-buffer)))
 
-(defun helm-ff-edit-marked-commit-buffer ()
+(defun helm-edit-marked-commit-buffer ()
   (interactive)
   (let ((renamed 0) (skipped 0) delayed)
     (cl-labels ((commit ()
@@ -92,7 +96,7 @@ Special commands:
                                               helm-ff--edit-marked-old-files)
                                       (not (assoc new delayed)))
                                  ;; Maybe ask
-                                 (if (or (null helm-ff-edit-marked-interactive-rename)
+                                 (if (or (null helm-edit-marked-interactive-rename)
                                          (y-or-n-p (format "File `%s' exists, overwrite? "
                                                            new)))
                                      (let ((tmpfile (make-temp-name old)))
@@ -111,7 +115,7 @@ Special commands:
                                  (and (file-exists-p new)
                                       (not (assoc new delayed)))
                                  ;; Maybe ask.
-                                 (if (or (null helm-ff-edit-marked-interactive-rename)
+                                 (if (or (null helm-edit-marked-interactive-rename)
                                          (y-or-n-p (format "File `%s' exists, overwrite? "
                                                            new)))
                                      (let ((tmpfile (make-temp-name new)))
@@ -122,7 +126,7 @@ Special commands:
                                     beg end `(old-name ,new))
                                    (cl-incf skipped)))
                                 (t ; Now really rename files.
-                                 (when helm-ff-edit-marked-create-parent-directories
+                                 (when helm-edit-marked-create-parent-directories
                                    ;; Check if base directory of new exists.
                                    (let ((basedir (helm-basedir new 'parent)))
                                      (unless (file-directory-p basedir)
@@ -149,7 +153,7 @@ Special commands:
       (message "* Renamed %s file(s), Skipped %s file(s)" renamed skipped)
       (kill-buffer helm-ff-edit-buffer))))
 
-(defun helm-ff-edit-marked-revert-changes ()
+(defun helm-edit-marked-revert-changes ()
   (interactive)
   (with-current-buffer helm-ff-edit-buffer
     (cl-loop for o in (overlays-in (point-min) (point-max))
