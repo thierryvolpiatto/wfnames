@@ -75,20 +75,19 @@ Special commands:
                   (with-current-buffer helm-ff-edit-buffer
                     (goto-char (point-min))
                     (while (not (eobp))
-                      (let ((old (get-text-property (point) 'old-name))
-                            (new (buffer-substring-no-properties
-                                  (point-at-bol) (point-at-eol))))
+                      (let* ((beg (point-at-bol))
+                             (end (point-at-eol))
+                             (old (get-text-property (point) 'old-name))
+                             (new (buffer-substring-no-properties beg end)))
                         (unless (string= old new) ; not modified.
                           (if (and (file-exists-p new)
                                    (not (assoc new delayed)))
                               (let ((tmpfile (make-temp-name new)))
                                 (push (cons new tmpfile) delayed)
                                 (rename-file new tmpfile)
-                                (delete-region (point-at-bol) (point-at-eol))
-                                (insert (propertize new 'old-name tmpfile)))
+                                (add-text-properties beg end `(old-name ,tmpfile)))
                             (rename-file old new)
-                            (add-text-properties
-                             (point-at-bol) (point-at-eol) `(old-name ,new))
+                            (add-text-properties beg end `(old-name ,new))
                             (setq delayed
                                   (delete (assoc new delayed) delayed))
                             (cl-incf renamed))))
