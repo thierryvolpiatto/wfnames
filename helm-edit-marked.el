@@ -6,6 +6,7 @@
 (require 'helm)
 
 (defvar helm-ff-edit-buffer "*Edit hff marked*")
+(defvar helm-ff--edit-marked-old-files nil)
 
 ;; TODO:
 ;; - Handle backing up and asking when overwriting
@@ -65,7 +66,8 @@ Special commands:
                  do (insert (propertize
                              file 'old-name file 'face 'helm-ff-file)
                             "\n")))
-      (helm-ff-edit-mode))
+      (helm-ff-edit-mode)
+      (set (make-local-variable 'helm-ff--edit-marked-old-files) marked))
     (switch-to-buffer helm-ff-edit-buffer)))
 
 (defun helm-ff-edit-marked-commit-buffer ()
