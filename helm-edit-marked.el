@@ -9,7 +9,7 @@
 (defvar helm-ff--edit-marked-old-files nil)
 
 (defvar helm-ff-edit-marked-create-parent-directories nil)
-(defvar helm-ff-edit-marked-interactive-rename t)
+(defvar helm-ff-edit-marked-interactive-rename nil)
 
 ;; TODO:
 ;; - Handle backing up when overwriting
