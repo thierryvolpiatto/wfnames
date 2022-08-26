@@ -96,8 +96,6 @@ Special commands:
                                          (y-or-n-p (format "File `%s' exists, overwrite? "
                                                            new)))
                                      (let ((tmpfile (make-temp-name old)))
-                                       (when (file-directory-p new)
-                                         (setq tmpfile (file-name-as-directory tmpfile)))
                                        (push (cons new tmpfile) delayed)
                                        (rename-file old tmpfile)
                                        (add-text-properties
@@ -117,8 +115,6 @@ Special commands:
                                          (y-or-n-p (format "File `%s' exists, overwrite? "
                                                            new)))
                                      (let ((tmpfile (make-temp-name new)))
-                                       (when (file-directory-p new)
-                                         (setq tmpfile (file-name-as-directory tmpfile)))
                                        (push (cons new tmpfile) delayed)
                                        (rename-file new tmpfile))
                                    ;; Answer is no, skip.
@@ -141,7 +137,9 @@ Special commands:
                                    ;; The temp file was created in
                                    ;; clause 2, delete it.
                                    (when (and tmp (file-exists-p tmp))
-                                     (delete-file tmp))
+                                     (if (file-directory-p tmp)
+                                         (delete-directory tmp t)
+                                       (delete-file tmp)))
                                    (setq delayed
                                          (delete assoc delayed)))
                                  (cl-incf renamed))))
