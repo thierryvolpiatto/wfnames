@@ -1,37 +1,60 @@
-;;; helm-edit-marked.el -- Edit marked files. -*- lexical-binding:t -*-
+;;; wfnames.el -- Edit marked files. -*- lexical-binding:t -*-
 ;;
 
-;;; Code:
-
-(require 'helm)
-
-(defvar helm-ff-edit-buffer "*Edit hff marked*")
-(defvar helm-ff--edit-marked-old-files nil)
-
-(defvar helm-edit-marked-create-parent-directories nil)
-(defvar helm-edit-marked-interactive-rename nil)
+;;; Description:
+;; A mode to edit filenames, similar to wdired.
 
 ;; TODO:
 ;; - Handle backing up when overwriting
-;; (defvar helm-edit-marked-make-backup nil)
+;; (defvar wfnames-make-backup nil)
 
-(defvar helm-ff-edit-mode-map
+
+;;; Code:
+
+(require 'cl-lib)
+
+;; Internal.
+(defvar wfnames-buffer "*Wfnames*")
+(defvar wfnames-old-files nil)
+
+
+(defgroup wfnames nil
+  "A mode to edit filenames.")
+
+(defcustom wfnames-create-parent-directories nil
+  "Create parent directories when non nil."
+  :type 'boolean)
+
+(defcustom wfnames-interactive-rename nil
+  "Ask confirmation when overwriting."
+  :type 'boolean)
+
+(defface wfnames-modified '((t :background "DarkOrange"))
+  "Face used when filename is modified.")
+
+(defface wfnames-modified-exists '((t :background "LightBlue"))
+  "Face used when modified fname point to an existing file.")
+
+(defface wfnames-files '((t :foreground "RoyalBlue"))
+  "Face used to display filenames in wfnames buffer.")
+
+(defvar wfnames-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-x C-s") #'helm-edit-marked-commit-buffer)
-    (define-key map (kbd "C-c C-k") #'helm-edit-marked-revert-changes)
+    (define-key map (kbd "C-x C-s") #'wfnames-commit-buffer)
+    (define-key map (kbd "C-c C-k") #'wfnames-revert-changes)
     map))
 
-(define-derived-mode helm-ff-edit-mode text-mode
-  "helm-ff-edit-mode"
-  "Edit HFF marked files.
+(define-derived-mode wfnames-mode
+    text-mode "wfnames-mode"
+    "Edit HFF marked files.
 
 Special commands:
 \\{helm-ff-edit-mode-map}
 "
-  (add-hook 'after-change-functions #'helm-edit-marked-after-change-hook nil t))
+  (add-hook 'after-change-functions #'wfnames-after-change-hook nil t))
 
-(defun helm-edit-marked-after-change-hook (beg _end _leng-before)
-  (with-current-buffer helm-ff-edit-buffer
+(defun wfnames-after-change-hook (beg _end _leng-before)
+  (with-current-buffer wfnames-buffer
     (save-excursion
       (save-match-data
         (goto-char beg)
@@ -58,27 +81,23 @@ Special commands:
                    (overlay-put ov 'priority 0)
                    (overlay-put ov 'evaporate t))))))))
 
-(defun helm-edit-marked-setup-buffer (files)
-  (with-current-buffer (get-buffer-create helm-ff-edit-buffer)
+(cl-defun wfnames-setup-buffer (files
+                                &optional (display-fn #'switch-to-buffer))
+  (with-current-buffer (get-buffer-create wfnames-buffer)
     (save-excursion
       (cl-loop for file in files
                do (insert (propertize
                            file 'old-name file 'face 'helm-ff-file)
                           "\n")))
-    (helm-ff-edit-mode)
-    (set (make-local-variable 'helm-ff--edit-marked-old-files) files)))
-
-;; This is the action for HFF.
-(defun helm-ff-edit-marked-files (_candidate)
-  (let ((marked (helm-marked-candidates)))
-    (helm-edit-marked-setup-buffer marked)
-    (switch-to-buffer helm-ff-edit-buffer)))
-
-(defun helm-edit-marked-commit-buffer ()
+    (wfnames-mode)
+    (set (make-local-variable 'wfnames-old-files) files)
+    (funcall display-fn wfnames-buffer)))
+
+(defun wfnames-commit-buffer ()
   (interactive)
   (let ((renamed 0) (skipped 0) delayed)
     (cl-labels ((commit ()
-                  (with-current-buffer helm-ff-edit-buffer
+                  (with-current-buffer wfnames-buffer
                     (goto-char (point-min))
                     (while (not (eobp))
                       (let* ((beg (point-at-bol))
@@ -93,10 +112,10 @@ Special commands:
                                  ;; to next turn.
                                  (and (file-exists-p new)
                                       (member new
-                                              helm-ff--edit-marked-old-files)
+                                              wfnames-old-files)
                                       (not (assoc new delayed)))
                                  ;; Maybe ask
-                                 (if (or (null helm-edit-marked-interactive-rename)
+                                 (if (or (null wfnames-interactive-rename)
                                          (y-or-n-p (format "File `%s' exists, overwrite? "
                                                            new)))
                                      (let ((tmpfile (make-temp-name old)))
@@ -115,7 +134,7 @@ Special commands:
                                  (and (file-exists-p new)
                                       (not (assoc new delayed)))
                                  ;; Maybe ask.
-                                 (if (or (null helm-edit-marked-interactive-rename)
+                                 (if (or (null wfnames-interactive-rename)
                                          (y-or-n-p (format "File `%s' exists, overwrite? "
                                                            new)))
                                      (let ((tmpfile (make-temp-name new)))
@@ -126,7 +145,7 @@ Special commands:
                                     beg end `(old-name ,new))
                                    (cl-incf skipped)))
                                 (t ; Now really rename files.
-                                 (when helm-edit-marked-create-parent-directories
+                                 (when wfnames-create-parent-directories
                                    ;; Check if base directory of new exists.
                                    (let ((basedir (helm-basedir new 'parent)))
                                      (unless (file-directory-p basedir)
@@ -151,11 +170,11 @@ Special commands:
                     (when delayed (commit)))))
       (commit)
       (message "* Renamed %s file(s), Skipped %s file(s)" renamed skipped)
-      (kill-buffer helm-ff-edit-buffer))))
+      (kill-buffer wfnames-buffer))))
 
-(defun helm-edit-marked-revert-changes ()
+(defun wfnames-revert-changes ()
   (interactive)
-  (with-current-buffer helm-ff-edit-buffer
+  (with-current-buffer wfnames-buffer
     (cl-loop for o in (overlays-in (point-min) (point-max))
              when (overlay-get o 'hff-changed)
              do (delete-overlay o))
@@ -171,6 +190,6 @@ Special commands:
                      old 'old-name old 'face 'helm-ff-file)))
           (forward-line 1))))))
 
-(provide 'helm-edit-marked)
+(provide 'wfnames)
 
-;;; helm-edit-marked.el ends here
+;;; wfnames.el ends here
