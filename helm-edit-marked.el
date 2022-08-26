@@ -7,6 +7,7 @@
 
 (defvar helm-ff-edit-buffer "*Edit hff marked*")
 (defvar helm-ff--edit-marked-old-files nil)
+(defvar helm-ff-edit-marked-create-parent-directories nil)
 
 ;; TODO:
 ;; - Handle backing up and asking when overwriting
@@ -107,6 +108,11 @@ Special commands:
                                    (rename-file new tmpfile)))
                                 ;; Now really rename files.
                                 (t
+                                 (when helm-ff-edit-marked-create-parent-directories
+                                   ;; Check if base directory of new exists.
+                                   (let ((basedir (helm-basedir new 'parent)))
+                                     (unless (file-directory-p basedir)
+                                       (mkdir basedir 'parents))))
                                  (rename-file old new)
                                  (add-text-properties beg end `(old-name ,new))
                                  (let* ((assoc (assoc new delayed))
