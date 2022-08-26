@@ -9,14 +9,11 @@
 (defvar helm-ff--edit-marked-old-files nil)
 
 (defvar helm-ff-edit-marked-create-parent-directories nil)
-(defvar helm-ff-edit-marked-interactive-rename nil)
+(defvar helm-ff-edit-marked-interactive-rename t)
 
 ;; TODO:
-;; - Handle backing up and asking when overwriting
-;; (defvar helm-ff-edit-marked-interactive-rename nil)
+;; - Handle backing up when overwriting
 ;; (defvar helm-ff-edit-marked-make-backup nil)
-;; - Create parent directories
-;; (defvar helm-ff-edit-marked-create-parent-directories nil)
 
 (defvar helm-ff-edit-mode-map
   (let ((map (make-sparse-keymap)))
@@ -75,7 +72,7 @@ Special commands:
 
 (defun helm-ff-edit-marked-commit-buffer ()
   (interactive)
-  (let ((renamed 0) delayed)
+  (let ((renamed 0) (skipped 0) delayed)
     (cl-labels ((commit ()
                   (with-current-buffer helm-ff-edit-buffer
                     (goto-char (point-min))
@@ -105,9 +102,10 @@ Special commands:
                                        (rename-file old tmpfile)
                                        (add-text-properties
                                         beg end `(old-name ,tmpfile)))
-                                   (push (cons new tmpfile) delayed)
+                                   ;; Answer is no, skip.
                                    (add-text-properties
-                                    beg end '(old-name 'skip))))
+                                    beg end `(old-name ,new))
+                                   (cl-incf skipped)))
                                 ;; New file exists but is not part of
                                 ;; the next files to rename, make a
                                 ;; temp file of NEW and delay renaming
@@ -123,9 +121,10 @@ Special commands:
                                          (setq tmpfile (file-name-as-directory tmpfile)))
                                        (push (cons new tmpfile) delayed)
                                        (rename-file new tmpfile))
-                                   (push (cons new tmpfile) delayed)
+                                   ;; Answer is no, skip.
                                    (add-text-properties
-                                    beg end '(old-name 'skip))))
+                                    beg end `(old-name ,new))
+                                   (cl-incf skipped)))
                                 ;; Now really rename files.
                                 (t
                                  (when helm-ff-edit-marked-create-parent-directories
@@ -150,7 +149,7 @@ Special commands:
                         (forward-line 1)))
                     (when delayed (commit)))))
       (commit)
-      (message "* Renamed %s file(s) " renamed)
+      (message "* Renamed %s file(s), Skipped %s file(s)" renamed skipped)
       (kill-buffer helm-ff-edit-buffer))))
 
 (defun helm-ff-edit-marked-revert-changes ()
