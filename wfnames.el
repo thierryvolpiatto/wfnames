@@ -19,7 +19,8 @@
 
 
 (defgroup wfnames nil
-  "A mode to edit filenames.")
+  "A mode to edit filenames."
+  :group 'wfnames)
 
 (defcustom wfnames-create-parent-directories nil
   "Create parent directories when non nil."
@@ -147,7 +148,8 @@ Special commands:
                                 (t ; Now really rename files.
                                  (when wfnames-create-parent-directories
                                    ;; Check if base directory of new exists.
-                                   (let ((basedir (helm-basedir new 'parent)))
+                                   (let ((basedir (file-name-directory
+                                                   (directory-file-name  new))))
                                      (unless (file-directory-p basedir)
                                        (mkdir basedir 'parents))))
                                  (rename-file
