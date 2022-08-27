@@ -50,6 +50,10 @@
   "Ask confirmation when overwriting."
   :type 'boolean)
 
+(defcustom wfnames-backup-overwrite nil
+  "Make a backup when overwriting."
+  :type 'boolean)
+
 (defface wfnames-modified '((t :background "LightBlue"))
   "Face used when filename is modified.")
 
@@ -137,8 +141,7 @@ Special commands:
                                  ;; file to OLD, then delay renaming
                                  ;; to next turn.
                                  (and (file-exists-p new)
-                                      (member new
-                                              wfnames-old-files)
+                                      (member new wfnames-old-files)
                                       (not (assoc new delayed)))
                                  ;; Maybe ask
                                  (if (or (null wfnames-interactive-rename)
@@ -146,6 +149,8 @@ Special commands:
                                                            new)))
                                      (let ((tmpfile (make-temp-name old)))
                                        (push (cons new tmpfile) delayed)
+                                       (when wfnames-backup-overwrite
+                                         (rename-file new (car (find-backup-file-name new))))
                                        (rename-file new tmpfile))
                                    ;; Answer is no, skip.
                                    (add-text-properties
@@ -163,6 +168,8 @@ Special commands:
                                                            new)))
                                      (let ((tmpfile (make-temp-name new)))
                                        (push (cons new tmpfile) delayed)
+                                       (when wfnames-backup-overwrite
+                                         (rename-file new (car (find-backup-file-name new))))
                                        (rename-file new tmpfile))
                                    ;; Answer is no, skip.
                                    (add-text-properties
