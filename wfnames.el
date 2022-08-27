@@ -141,9 +141,7 @@ Special commands:
                                                            new)))
                                      (let ((tmpfile (make-temp-name old)))
                                        (push (cons new tmpfile) delayed)
-                                       (rename-file old tmpfile)
-                                       (add-text-properties
-                                        beg end `(old-name ,tmpfile)))
+                                       (rename-file new tmpfile))
                                    ;; Answer is no, skip.
                                    (add-text-properties
                                     beg end `(old-name ,new))
