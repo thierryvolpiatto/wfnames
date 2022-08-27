@@ -74,7 +74,7 @@ Special commands:
 "
   (add-hook 'after-change-functions #'wfnames-after-change-hook nil t))
 
-(defun wfnames-after-change-hook (beg _end _len)
+(defun wfnames-after-change-hook (beg end _len)
   (with-current-buffer wfnames-buffer
     (save-excursion
       (save-match-data
@@ -100,7 +100,12 @@ Special commands:
                    (overlay-put ov 'face face)
                    (overlay-put ov 'hff-changed t)
                    (overlay-put ov 'priority 0)
-                   (overlay-put ov 'evaporate t))))))))
+                   (overlay-put ov 'evaporate t)))
+          ;; When text is modified with something else than
+          ;; self-insert-command e.g. yank or iedit-rect, it loose its
+          ;; properties, so restore props here.
+          (put-text-property beg end 'face 'wfnames-files)
+          (put-text-property beg end 'old-name old))))))
 
 (cl-defun wfnames-setup-buffer (files
                                 &optional (display-fn #'switch-to-buffer))
