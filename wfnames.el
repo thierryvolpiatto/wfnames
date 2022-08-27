@@ -50,10 +50,10 @@
   "Ask confirmation when overwriting."
   :type 'boolean)
 
-(defface wfnames-modified '((t :background "DarkOrange"))
+(defface wfnames-modified '((t :background "LightBlue"))
   "Face used when filename is modified.")
 
-(defface wfnames-modified-exists '((t :background "LightBlue"))
+(defface wfnames-modified-exists '((t :background "DarkOrange"))
   "Face used when modified fname point to an existing file.")
 
 (defface wfnames-files '((t :foreground "RoyalBlue"))
@@ -74,7 +74,7 @@ Special commands:
 "
   (add-hook 'after-change-functions #'wfnames-after-change-hook nil t))
 
-(defun wfnames-after-change-hook (beg _end _leng-before)
+(defun wfnames-after-change-hook (beg _end _len)
   (with-current-buffer wfnames-buffer
     (save-excursion
       (save-match-data
@@ -84,8 +84,8 @@ Special commands:
                (old (get-text-property bol 'old-name))
                (new (buffer-substring-no-properties bol eol))
                ov face)
-          (setq face `(:background ,(if (file-exists-p new)
-                                        "DarkOrange" "LightBlue")))
+          (setq face (if (file-exists-p new)
+                         'wfnames-modified-exists 'wfnames-modified))
           (cl-loop for o in (overlays-in bol eol)
                    when (overlay-get o 'hff-changed)
                    return (setq ov o))
@@ -108,7 +108,7 @@ Special commands:
     (save-excursion
       (cl-loop for file in files
                do (insert (propertize
-                           file 'old-name file 'face 'helm-ff-file)
+                           file 'old-name file 'face 'wfnames-files)
                           "\n")))
     (wfnames-mode)
     (set (make-local-variable 'wfnames-old-files) files)
