@@ -145,12 +145,14 @@ Special commands:
                                       (not (assoc new delayed)))
                                  ;; Maybe ask
                                  (if (or (null wfnames-interactive-rename)
-                                         (y-or-n-p (format "File `%s' exists, overwrite? "
-                                                           new)))
+                                         (y-or-n-p
+                                          (format "File `%s' exists, overwrite? "
+                                                  new)))
                                      (let ((tmpfile (make-temp-name old)))
                                        (push (cons new tmpfile) delayed)
                                        (when wfnames-backup-overwrite
-                                         (rename-file new (car (find-backup-file-name new))))
+                                         (rename-file
+                                          new (car (find-backup-file-name new))))
                                        (rename-file new tmpfile))
                                    ;; Answer is no, skip.
                                    (add-text-properties
@@ -164,12 +166,14 @@ Special commands:
                                       (not (assoc new delayed)))
                                  ;; Maybe ask.
                                  (if (or (null wfnames-interactive-rename)
-                                         (y-or-n-p (format "File `%s' exists, overwrite? "
-                                                           new)))
+                                         (y-or-n-p
+                                          (format "File `%s' exists, overwrite? "
+                                                  new)))
                                      (let ((tmpfile (make-temp-name new)))
                                        (push (cons new tmpfile) delayed)
                                        (when wfnames-backup-overwrite
-                                         (rename-file new (car (find-backup-file-name new))))
+                                         (rename-file
+                                          new (car (find-backup-file-name new))))
                                        (rename-file new tmpfile))
                                    ;; Answer is no, skip.
                                    (add-text-properties
