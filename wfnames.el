@@ -50,10 +50,6 @@
   "Ask confirmation when overwriting."
   :type 'boolean)
 
-(defcustom wfnames-backup-overwrite nil
-  "Make a backup when overwriting."
-  :type 'boolean)
-
 (defface wfnames-modified '((t :background "LightBlue"))
   "Face used when filename is modified.")
 
@@ -150,10 +146,7 @@ Special commands:
                                                   new)))
                                      (let ((tmpfile (make-temp-name old)))
                                        (push (cons new tmpfile) delayed)
-                                       (if wfnames-backup-overwrite
-                                           (rename-file
-                                            new (car (find-backup-file-name new)))
-                                         (rename-file new tmpfile)))
+                                       (rename-file new tmpfile))
                                    ;; Answer is no, skip.
                                    (add-text-properties
                                     beg end `(old-name ,new))
@@ -171,10 +164,7 @@ Special commands:
                                                   new)))
                                      (let ((tmpfile (make-temp-name new)))
                                        (push (cons new tmpfile) delayed)
-                                       (if wfnames-backup-overwrite
-                                           (rename-file
-                                            new (car (find-backup-file-name new)))
-                                         (rename-file new tmpfile)))
+                                       (rename-file new tmpfile))
                                    ;; Answer is no, skip.
                                    (add-text-properties
                                     beg end `(old-name ,new))
