@@ -168,7 +168,9 @@ Special commands:
                                                    (file-name-as-directory new)
                                                  new)))
                                    (if (and ow (wfnames-ask-for-overwrite new))
-                                       (rename-file old target ow)
+                                       (rename-file
+                                        (or (assoc-default old delayed) old)
+                                        target ow)
                                      (and ow (cl-incf skipped))
                                      (and (null ow) (rename-file old target))))
                                  (add-text-properties beg end `(old-name ,new))
