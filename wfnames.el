@@ -42,11 +42,11 @@
   "A mode to edit filenames."
   :group 'wfnames)
 
-(defcustom wfnames-create-parent-directories nil
+(defcustom wfnames-create-parent-directories t
   "Create parent directories when non nil."
   :type 'boolean)
 
-(defcustom wfnames-interactive-rename nil
+(defcustom wfnames-interactive-rename t
   "Ask confirmation when overwriting."
   :type 'boolean)
 
@@ -119,6 +119,12 @@ Special commands:
     (set (make-local-variable 'wfnames-old-files) files)
     (funcall display-fn wfnames-buffer)))
 
+(defun wfnames-ask-for-overwrite (file)
+  (or (null wfnames-interactive-rename)
+      (y-or-n-p
+       (format "File `%s' exists, overwrite? "
+               file))))
+
 (defun wfnames-commit-buffer ()
   (interactive)
   (let ((renamed 0) (skipped 0) delayed)
@@ -129,7 +135,8 @@ Special commands:
                       (let* ((beg (point-at-bol))
                              (end (point-at-eol))
                              (old (get-text-property (point) 'old-name))
-                             (new (buffer-substring-no-properties beg end)))
+                             (new (buffer-substring-no-properties beg end))
+                             ow)
                         (unless (string= old new) ; not modified, skip.
                           (cond (;; New file exists, rename it to a
                                  ;; temp file to put it out of the way
@@ -138,10 +145,7 @@ Special commands:
                                       (member new wfnames-old-files)
                                       (not (assoc new delayed)))
                                  ;; Maybe ask.
-                                 (if (or (null wfnames-interactive-rename)
-                                         (y-or-n-p
-                                          (format "File `%s' exists, overwrite? "
-                                                  new)))
+                                 (if (wfnames-ask-for-overwrite new)
                                      (let ((tmpfile (make-temp-name new)))
                                        (push (cons new tmpfile) delayed)
                                        (rename-file new tmpfile))
@@ -151,17 +155,22 @@ Special commands:
                                    (cl-incf skipped)))
                                 ;; Now really rename files.
                                 (t
+                                 (when (and (file-exists-p new)
+                                            (not (assoc new delayed)))
+                                   (setq ow t))
                                  (when wfnames-create-parent-directories
                                    ;; Check if base directory of new exists.
                                    (let ((basedir (file-name-directory
                                                    (directory-file-name  new))))
                                      (unless (file-directory-p basedir)
                                        (mkdir basedir 'parents))))
-                                 (rename-file
-                                  old (if (file-directory-p new)
-                                          (file-name-as-directory new)
-                                        new)
-                                  (not (member new wfnames-old-files)))
+                                 (let ((target (if (file-directory-p new)
+                                                   (file-name-as-directory new)
+                                                 new)))
+                                   (if (and ow (wfnames-ask-for-overwrite new))
+                                       (rename-file old target ow)
+                                     (and ow (cl-incf skipped))
+                                     (and (null ow) (rename-file old target))))
                                  (add-text-properties beg end `(old-name ,new))
                                  (let* ((assoc (assoc new delayed))
                                         (tmp   (cdr assoc)))
