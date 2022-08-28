@@ -167,22 +167,19 @@ Special commands:
                                                    (directory-file-name  new))))
                                      (unless (file-directory-p basedir)
                                        (mkdir basedir 'parents))))
-                                 (let ((target (if (file-directory-p new)
-                                                   (file-name-as-directory new)
-                                                 new)))
-                                   (if (and ow (wfnames-ask-for-overwrite new))
-                                       (rename-file
-                                        ;; Use old temp file if it
-                                        ;; exists [1].
-                                        (or (assoc-default old delayed) old)
-                                        target ow)
-                                     (and ow (cl-incf skipped))
-                                     (and (null ow) (rename-file old target))))
+                                 (if (and ow (wfnames-ask-for-overwrite new))
+                                     (rename-file
+                                      ;; Use old temp file if it
+                                      ;; exists [1].
+                                      (or (assoc-default old delayed) old)
+                                      new ow)
+                                   (and ow (cl-incf skipped))
+                                   (and (null ow) (rename-file old new)))
                                  (add-text-properties beg end `(old-name ,new))
                                  (let* ((assoc (assoc new delayed))
                                         (tmp   (cdr assoc)))
                                    ;; The temp file was created in
-                                   ;; clause 2, delete it.
+                                   ;; clause 1, delete it.
                                    (when (and tmp (file-exists-p tmp))
                                      (if (file-directory-p tmp)
                                          (delete-directory tmp t)
