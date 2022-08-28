@@ -140,7 +140,10 @@ Special commands:
                         (unless (string= old new) ; not modified, skip.
                           (cond (;; New file exists, rename it to a
                                  ;; temp file to put it out of the way
-                                 ;; and delay real rename to next turn.
+                                 ;; and delay real rename to next
+                                 ;; turn. Make it accessible in
+                                 ;; delayed alist for next usage as
+                                 ;; old [1].
                                  (and (file-exists-p new)
                                       (member new wfnames-old-files)
                                       (not (assoc new delayed)))
@@ -169,6 +172,8 @@ Special commands:
                                                  new)))
                                    (if (and ow (wfnames-ask-for-overwrite new))
                                        (rename-file
+                                        ;; Use old temp file if it
+                                        ;; exists [1].
                                         (or (assoc-default old delayed) old)
                                         target ow)
                                      (and ow (cl-incf skipped))
