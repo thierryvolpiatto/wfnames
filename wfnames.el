@@ -193,7 +193,7 @@ Special commands:
                         (forward-line 1)))
                     (when delayed (commit)))))
       (commit)
-      (message "* Renamed %s file(s), Skipped %s file(s)" renamed skipped)
+      (message "Renamed %s file(s), Skipped %s file(s)" renamed skipped)
       (kill-buffer wfnames-buffer))))
 
 (defun wfnames-revert-changes ()
