@@ -70,7 +70,7 @@
 
 (defvar wfnames-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-x C-c") #'wfnames-commit-buffer)
+    (define-key map (kbd "C-c C-c") #'wfnames-commit-buffer)
     (define-key map (kbd "C-c C-k") #'wfnames-revert-changes)
     map))
 
