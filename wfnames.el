@@ -58,6 +58,12 @@
 
 (defface wfnames-files '((t :foreground "RoyalBlue"))
   "Face used to display filenames in wfnames buffer.")
+
+(defface wfnames-dir '((t :background "White" :foreground "red"))
+  "Face used to display directories in wfnames buffer.")
+
+(defface wfnames-symlink '((t :foreground "Orange"))
+  "Face used to display symlinks in wfnames buffer.")
 
 (defvar wfnames-mode-map
   (let ((map (make-sparse-keymap)))
@@ -112,8 +118,11 @@ Special commands:
   (with-current-buffer (get-buffer-create wfnames-buffer)
     (save-excursion
       (cl-loop for file in files
+               for face = (cond ((file-directory-p file) 'wfnames-dir)
+                                ((file-symlink-p file) 'wfnames-symlink)
+                                (t 'wfnames-files))
                do (insert (propertize
-                           file 'old-name file 'face 'wfnames-files)
+                           file 'old-name file 'face face)
                           "\n")))
     ;; Go to beginning of basename on first line.
     (while (re-search-forward "/" (point-at-eol) t))
