@@ -115,6 +115,8 @@ Special commands:
                do (insert (propertize
                            file 'old-name file 'face 'wfnames-files)
                           "\n")))
+    ;; Go to beginning of basename on first line.
+    (while (re-search-forward "/" (point-at-eol) t))
     (wfnames-mode)
     (set (make-local-variable 'wfnames-old-files) files)
     (funcall display-fn wfnames-buffer)))
