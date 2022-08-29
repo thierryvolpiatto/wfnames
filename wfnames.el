@@ -50,6 +50,9 @@
   "Ask confirmation when overwriting."
   :type 'boolean)
 
+(defvar wfnames-after-commit-hook nil)
+
+
 (defface wfnames-modified '((t :background "LightBlue"))
   "Face used when filename is modified.")
 
@@ -207,6 +210,7 @@ Special commands:
                         (forward-line 1)))
                     (when delayed (commit)))))
       (commit)
+      (run-hooks 'wfnames-after-commit-hook)
       (message "Renamed %s file(s), Skipped %s file(s)" renamed skipped)
       (kill-buffer wfnames-buffer))))
 
