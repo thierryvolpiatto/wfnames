@@ -64,6 +64,9 @@
 
 (defface wfnames-symlink '((t :foreground "Orange"))
   "Face used to display symlinks in wfnames buffer.")
+
+(defface wfnames-prefix '((t :foreground "Gold"))
+  "Face used to prefix filenames in wfnames buffer.")
 
 (defvar wfnames-mode-map
   (let ((map (make-sparse-keymap)))
@@ -122,7 +125,10 @@ Special commands:
                                 ((file-symlink-p file) 'wfnames-symlink)
                                 (t 'wfnames-files))
                do (insert (propertize
-                           file 'old-name file 'face face)
+                           file 'old-name file 'face face
+                           'line-prefix (propertize
+                                         "* "
+                                         'face 'wfnames-prefix))
                           "\n")))
     ;; Go to beginning of basename on first line.
     (while (re-search-forward "/" (point-at-eol) t))
