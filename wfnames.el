@@ -193,7 +193,9 @@ Special commands:
                                       ;; exists [1].
                                       (or (assoc-default old delayed) old)
                                       new ow)
+                                   ;; 'No' answered.
                                    (and ow (cl-incf skipped))
+                                   ;; Not an overwrite, do normal renaming.
                                    (and (null ow) (rename-file old new)))
                                  (add-text-properties beg end `(old-name ,new))
                                  (let* ((assoc (assoc new delayed))
