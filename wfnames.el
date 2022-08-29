@@ -239,8 +239,12 @@ Special commands:
           (unless (string= old new)
             (delete-region (point-at-bol) (point-at-eol))
             (insert (propertize
-                     old 'old-name old 'face 'helm-ff-file)))
-          (forward-line 1))))))
+                     old 'old-name old 'face 'wfnames-file
+                     'line-prefix (propertize
+                                   "* "
+                                   'face 'wfnames-prefix))))
+          (forward-line 1))))
+    (while (re-search-forward "/" (point-at-eol) t))))
 
 (provide 'wfnames)
 
