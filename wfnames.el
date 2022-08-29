@@ -165,6 +165,14 @@ Special commands:
                                  ;; delayed alist for next usage as
                                  ;; old [1].
                                  (and (file-exists-p new)
+                                      ;; FIXME: We should switch
+                                      ;; directly to next clause
+                                      ;; i.e. rename directly without
+                                      ;; delaying when file to rename
+                                      ;; is NOT part of the files to
+                                      ;; rename, so the test below is
+                                      ;; wrong, forcing to delete temp
+                                      ;; file at end of clause 2.
                                       (member new wfnames-old-files)
                                       (not (assoc new delayed)))
                                  ;; Maybe ask.
