@@ -163,7 +163,7 @@ Special commands:
                                  ;; temp file to put it out of the way
                                  ;; and delay real rename to next
                                  ;; turn. Make it accessible in
-                                 ;; delayed alist for next usage as
+                                 ;; overwrites alist for next usage as
                                  ;; old [1].
                                  (and (file-exists-p new)
                                       ;; new is one of the old
