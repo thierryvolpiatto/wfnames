@@ -35,8 +35,7 @@
 
 ;; Internal.
 (defvar wfnames-buffer "*Wfnames*")
-(defvar wfnames-old-files nil)
-
+(defvar wfnames--modified nil)
 
 (defgroup wfnames nil
   "A mode to edit filenames."
@@ -84,7 +83,8 @@
 Special commands:
 \\{helm-ff-edit-mode-map}
 "
-  (add-hook 'after-change-functions #'wfnames-after-change-hook nil t))
+  (add-hook 'after-change-functions #'wfnames-after-change-hook nil t)
+  (make-local-variable 'wfnames--modified))
 
 (defun wfnames-after-change-hook (beg end _len)
   (with-current-buffer wfnames-buffer
@@ -98,6 +98,8 @@ Special commands:
                ov face)
           (setq face (if (file-exists-p new)
                          'wfnames-modified-exists 'wfnames-modified))
+          (setq-local wfnames--modified
+                      (cons old (delete old wfnames--modified)))
           (cl-loop for o in (overlays-in bol eol)
                    when (overlay-get o 'hff-changed)
                    return (setq ov o))
@@ -136,7 +138,6 @@ Special commands:
     ;; Go to beginning of basename on first line.
     (while (re-search-forward "/" (point-at-eol) t))
     (wfnames-mode)
-    (set (make-local-variable 'wfnames-old-files) files)
     (funcall display-fn wfnames-buffer)))
 
 (defun wfnames-ask-for-overwrite (file)
@@ -165,15 +166,9 @@ Special commands:
                                  ;; delayed alist for next usage as
                                  ;; old [1].
                                  (and (file-exists-p new)
-                                      ;; FIXME: We should switch
-                                      ;; directly to next clause
-                                      ;; i.e. rename directly without
-                                      ;; delaying when file to rename
-                                      ;; is NOT part of the files to
-                                      ;; rename, so the test below is
-                                      ;; wrong, forcing to delete temp
-                                      ;; file at end of clause 2.
-                                      (member new wfnames-old-files)
+                                      ;; new is one of the old
+                                      ;; files about to be modified.
+                                      (member new wfnames--modified)
                                       (not (assoc new delayed)))
                                  ;; Maybe ask.
                                  (if (wfnames-ask-for-overwrite new)
@@ -206,16 +201,8 @@ Special commands:
                                    ;; Not an overwrite, do normal renaming.
                                    (and (null ow) (rename-file old new)))
                                  (add-text-properties beg end `(old-name ,new))
-                                 (let* ((assoc (assoc new delayed))
-                                        (tmp   (cdr assoc)))
-                                   ;; The temp file was created in
-                                   ;; clause 1, delete it.
-                                   (when (and tmp (file-exists-p tmp))
-                                     (if (file-directory-p tmp)
-                                         (delete-directory tmp t)
-                                       (delete-file tmp)))
-                                   (setq delayed
-                                         (delete assoc delayed)))
+                                 (setq delayed
+                                       (delete (assoc new delayed) delayed))
                                  (cl-incf renamed))))
                         (forward-line 1)))
                     (when delayed (commit)))))
