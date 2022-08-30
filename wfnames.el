@@ -50,6 +50,9 @@
   "Ask confirmation when overwriting."
   :type 'boolean)
 
+(defvar wfnames-after-commit-hook nil)
+
+
 (defface wfnames-modified '((t :background "LightBlue"))
   "Face used when filename is modified.")
 
@@ -58,10 +61,19 @@
 
 (defface wfnames-files '((t :foreground "RoyalBlue"))
   "Face used to display filenames in wfnames buffer.")
+
+(defface wfnames-dir '((t :background "White" :foreground "red"))
+  "Face used to display directories in wfnames buffer.")
+
+(defface wfnames-symlink '((t :foreground "Orange"))
+  "Face used to display symlinks in wfnames buffer.")
+
+(defface wfnames-prefix '((t :foreground "Gold"))
+  "Face used to prefix filenames in wfnames buffer.")
 
 (defvar wfnames-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-x C-s") #'wfnames-commit-buffer)
+    (define-key map (kbd "C-c C-c") #'wfnames-commit-buffer)
     (define-key map (kbd "C-c C-k") #'wfnames-revert-changes)
     map))
 
@@ -112,9 +124,17 @@ Special commands:
   (with-current-buffer (get-buffer-create wfnames-buffer)
     (save-excursion
       (cl-loop for file in files
+               for face = (cond ((file-directory-p file) 'wfnames-dir)
+                                ((file-symlink-p file) 'wfnames-symlink)
+                                (t 'wfnames-files))
                do (insert (propertize
-                           file 'old-name file 'face 'wfnames-files)
+                           file 'old-name file 'face face
+                           'line-prefix (propertize
+                                         "* "
+                                         'face 'wfnames-prefix))
                           "\n")))
+    ;; Go to beginning of basename on first line.
+    (while (re-search-forward "/" (point-at-eol) t))
     (wfnames-mode)
     (set (make-local-variable 'wfnames-old-files) files)
     (funcall display-fn wfnames-buffer)))
@@ -140,8 +160,19 @@ Special commands:
                         (unless (string= old new) ; not modified, skip.
                           (cond (;; New file exists, rename it to a
                                  ;; temp file to put it out of the way
-                                 ;; and delay real rename to next turn.
+                                 ;; and delay real rename to next
+                                 ;; turn. Make it accessible in
+                                 ;; delayed alist for next usage as
+                                 ;; old [1].
                                  (and (file-exists-p new)
+                                      ;; FIXME: We should switch
+                                      ;; directly to next clause
+                                      ;; i.e. rename directly without
+                                      ;; delaying when file to rename
+                                      ;; is NOT part of the files to
+                                      ;; rename, so the test below is
+                                      ;; wrong, forcing to delete temp
+                                      ;; file at end of clause 2.
                                       (member new wfnames-old-files)
                                       (not (assoc new delayed)))
                                  ;; Maybe ask.
@@ -164,18 +195,21 @@ Special commands:
                                                    (directory-file-name  new))))
                                      (unless (file-directory-p basedir)
                                        (mkdir basedir 'parents))))
-                                 (let ((target (if (file-directory-p new)
-                                                   (file-name-as-directory new)
-                                                 new)))
-                                   (if (and ow (wfnames-ask-for-overwrite new))
-                                       (rename-file old target ow)
-                                     (and ow (cl-incf skipped))
-                                     (and (null ow) (rename-file old target))))
+                                 (if (and ow (wfnames-ask-for-overwrite new))
+                                     (rename-file
+                                      ;; Use old temp file if it
+                                      ;; exists [1].
+                                      (or (assoc-default old delayed) old)
+                                      new ow)
+                                   ;; 'No' answered.
+                                   (and ow (cl-incf skipped))
+                                   ;; Not an overwrite, do normal renaming.
+                                   (and (null ow) (rename-file old new)))
                                  (add-text-properties beg end `(old-name ,new))
                                  (let* ((assoc (assoc new delayed))
                                         (tmp   (cdr assoc)))
                                    ;; The temp file was created in
-                                   ;; clause 2, delete it.
+                                   ;; clause 1, delete it.
                                    (when (and tmp (file-exists-p tmp))
                                      (if (file-directory-p tmp)
                                          (delete-directory tmp t)
@@ -186,7 +220,8 @@ Special commands:
                         (forward-line 1)))
                     (when delayed (commit)))))
       (commit)
-      (message "* Renamed %s file(s), Skipped %s file(s)" renamed skipped)
+      (run-hooks 'wfnames-after-commit-hook)
+      (message "Renamed %s file(s), Skipped %s file(s)" renamed skipped)
       (kill-buffer wfnames-buffer))))
 
 (defun wfnames-revert-changes ()
@@ -204,8 +239,12 @@ Special commands:
           (unless (string= old new)
             (delete-region (point-at-bol) (point-at-eol))
             (insert (propertize
-                     old 'old-name old 'face 'helm-ff-file)))
-          (forward-line 1))))))
+                     old 'old-name old 'face 'wfnames-file
+                     'line-prefix (propertize
+                                   "* "
+                                   'face 'wfnames-prefix))))
+          (forward-line 1))))
+    (while (re-search-forward "/" (point-at-eol) t))))
 
 (provide 'wfnames)
 
