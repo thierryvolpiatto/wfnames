@@ -78,12 +78,11 @@
     map))
 
 (define-derived-mode wfnames-mode
-    text-mode "wfnames-mode"
-    "Edit HFF marked files.
+    text-mode "wfnames"
+    "Major mode to edit filenames.
 
 Special commands:
-\\{helm-ff-edit-mode-map}
-"
+\\{wfnames-mode-map}"
   (add-hook 'after-change-functions #'wfnames-after-change-hook nil t)
   (make-local-variable 'wfnames--modified))
 
