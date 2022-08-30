@@ -148,7 +148,7 @@ Special commands:
 
 (defun wfnames-commit-buffer ()
   (interactive)
-  (let ((renamed 0) (skipped 0) delayed)
+  (let ((renamed 0) (skipped 0) delayed overwrites)
     (cl-labels ((commit ()
                   (with-current-buffer wfnames-buffer
                     (goto-char (point-min))
@@ -169,11 +169,12 @@ Special commands:
                                       ;; new is one of the old
                                       ;; files about to be modified.
                                       (member new wfnames--modified)
-                                      (not (assoc new delayed)))
+                                      (not (member new delayed)))
                                  ;; Maybe ask.
                                  (if (wfnames-ask-for-overwrite new)
                                      (let ((tmpfile (make-temp-name new)))
-                                       (push (cons new tmpfile) delayed)
+                                       (push (cons new tmpfile) overwrites)
+                                       (push new delayed)
                                        (rename-file new tmpfile))
                                    ;; Answer is no, skip.
                                    (add-text-properties
@@ -182,27 +183,25 @@ Special commands:
                                 ;; Now really rename files.
                                 (t
                                  (when (and (file-exists-p new)
-                                            (not (assoc new delayed)))
+                                            (not (member new delayed)))
                                    (setq ow t))
                                  (when wfnames-create-parent-directories
                                    ;; Check if base directory of new exists.
                                    (let ((basedir (file-name-directory
-                                                   (directory-file-name  new))))
+                                                   (directory-file-name new))))
                                      (unless (file-directory-p basedir)
                                        (mkdir basedir 'parents))))
                                  (if (and ow (wfnames-ask-for-overwrite new))
-                                     (rename-file
-                                      ;; Use old temp file if it
-                                      ;; exists [1].
-                                      (or (assoc-default old delayed) old)
-                                      new ow)
+                                     (rename-file old new 'overwrite)
                                    ;; 'No' answered.
                                    (and ow (cl-incf skipped))
                                    ;; Not an overwrite, do normal renaming.
-                                   (and (null ow) (rename-file old new)))
+                                   (and (null ow)
+                                        (rename-file
+                                         (or (assoc-default old overwrites) old)
+                                         new)))
                                  (add-text-properties beg end `(old-name ,new))
-                                 (setq delayed
-                                       (delete (assoc new delayed) delayed))
+                                 (setq delayed (delete new delayed))
                                  (cl-incf renamed))))
                         (forward-line 1)))
                     (when delayed (commit)))))
