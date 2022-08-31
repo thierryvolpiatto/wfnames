@@ -192,10 +192,13 @@ Special commands:
                                      (unless (file-directory-p basedir)
                                        (mkdir basedir 'parents))))
                                  (if (and ow (wfnames-ask-for-overwrite new))
+                                     ;; Direct overwrite i.e. first loop.
                                      (rename-file old new 'overwrite)
                                    ;; 'No' answered.
                                    (and ow (cl-incf skipped))
-                                   ;; Not an overwrite, do normal renaming.
+                                   ;; It is an overwrite when OLD is
+                                   ;; found in overwrites alist (2nd
+                                   ;; loop), otherwise do normal renaming.
                                    (and (null ow)
                                         (rename-file
                                          (or (assoc-default old overwrites) old)
