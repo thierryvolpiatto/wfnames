@@ -75,7 +75,17 @@
     (define-key map (kbd "C-c C-c") #'wfnames-commit-buffer)
     (define-key map (kbd "C-x C-s") #'wfnames-commit-buffer)
     (define-key map (kbd "C-c C-k") #'wfnames-revert-changes)
+    (define-key map (kbd "TAB") #'completion-at-point)
     map))
+
+(defun wfnames-capf ()
+  (let ((beg (point-at-bol))
+        (end (point)))
+    (list beg end #'completion-file-name-table
+          :exit-function (lambda (str _status)
+                             (when (and (stringp str)
+                                        (eq (char-after) ?/))
+                               (delete-char -1))))))
 
 (define-derived-mode wfnames-mode
     text-mode "wfnames"
@@ -84,7 +94,8 @@
 Special commands:
 \\{wfnames-mode-map}"
   (add-hook 'after-change-functions #'wfnames-after-change-hook nil t)
-  (make-local-variable 'wfnames--modified))
+  (make-local-variable 'wfnames--modified)
+  (set (make-local-variable 'completion-at-point-functions) #'wfnames-capf))
 
 (defun wfnames-after-change-hook (beg end _len)
   (with-current-buffer wfnames-buffer
