@@ -51,6 +51,9 @@
 
 (defvar wfnames-after-commit-hook nil)
 
+(defcustom wfnames-after-commit-function #'kill-buffer
+  "A function to call on `wfnames-buffer' when done."
+  :type 'function)
 
 (defface wfnames-modified '((t :background "LightBlue"))
   "Face used when filename is modified.")
@@ -222,7 +225,7 @@ Special commands:
       (commit)
       (run-hooks 'wfnames-after-commit-hook)
       (message "Renamed %s file(s), Skipped %s file(s)" renamed skipped)
-      (kill-buffer wfnames-buffer))))
+      (funcall wfnames-after-commit-function wfnames-buffer))))
 
 (defun wfnames-revert-changes ()
   (interactive)
