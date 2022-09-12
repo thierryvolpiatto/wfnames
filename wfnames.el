@@ -24,11 +24,6 @@
 ;;; Commentary:
 ;; A mode to edit filenames, similar to wdired.
 
-;; TODO:
-;; - Handle backing up when overwriting
-;; (defvar wfnames-make-backup nil)
-
-
 ;;; Code:
 
 (require 'cl-lib)
@@ -54,6 +49,10 @@
 (defcustom wfnames-after-commit-function #'kill-buffer
   "A function to call on `wfnames-buffer' when done."
   :type 'function)
+
+(defcustom wfnames-make-backup nil
+  "Backup files before overwriting when non nil."
+  :type 'boolean)
 
 (defface wfnames-modified '((t :background "LightBlue"))
   "Face used when filename is modified.")
@@ -160,6 +159,13 @@ Special commands:
        (format "File `%s' exists, overwrite? "
                file))))
 
+(defun wfnames-maybe-backup (file)
+  (when wfnames-make-backup
+    (with-current-buffer (find-file-noselect file)
+      (let ((backup-by-copying t))
+        (backup-buffer))
+      (kill-buffer))))
+
 (defun wfnames-commit-buffer ()
   (interactive)
   (let ((renamed 0) (skipped 0) delayed overwrites)
@@ -189,6 +195,7 @@ Special commands:
                                      (let ((tmpfile (make-temp-name new)))
                                        (push (cons new tmpfile) overwrites)
                                        (push new delayed)
+                                       (wfnames-maybe-backup new)
                                        (rename-file new tmpfile))
                                    ;; Answer is no, skip.
                                    (add-text-properties
@@ -207,7 +214,9 @@ Special commands:
                                        (mkdir basedir 'parents))))
                                  (if (and ow (wfnames-ask-for-overwrite new))
                                      ;; Direct overwrite i.e. first loop.
-                                     (rename-file old new 'overwrite)
+                                     (progn
+                                       (wfnames-maybe-backup new)
+                                       (rename-file old new 'overwrite))
                                    ;; 'No' answered.
                                    (and ow (cl-incf skipped))
                                    ;; It is an overwrite when OLD is
