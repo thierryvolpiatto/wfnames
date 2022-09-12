@@ -137,6 +137,7 @@ Special commands:
 (cl-defun wfnames-setup-buffer (files
                                 &optional (display-fn #'switch-to-buffer))
   (with-current-buffer (get-buffer-create wfnames-buffer)
+    (erase-buffer)
     (save-excursion
       (cl-loop for file in files
                for face = (cond ((file-directory-p file) 'wfnames-dir)
