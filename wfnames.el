@@ -76,8 +76,9 @@
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-c") #'wfnames-commit-buffer)
     (define-key map (kbd "C-x C-s") #'wfnames-commit-buffer)
-    (define-key map (kbd "C-c C-k") #'wfnames-revert-changes)
-    (define-key map (kbd "TAB") #'completion-at-point)
+    (define-key map (kbd "C-c R")   #'wfnames-revert-changes)
+    (define-key map (kbd "C-c C-k") #'wfnames-abort)
+    (define-key map (kbd "TAB")     #'completion-at-point)
     map))
 
 (defun wfnames-capf ()
@@ -98,6 +99,10 @@ Special commands:
   (add-hook 'after-change-functions #'wfnames-after-change-hook nil t)
   (make-local-variable 'wfnames--modified)
   (set (make-local-variable 'completion-at-point-functions) #'wfnames-capf))
+
+(defun wfnames-abort ()
+  (interactive)
+  (quit-window t))
 
 (defun wfnames-after-change-hook (beg end _len)
   (with-current-buffer wfnames-buffer
