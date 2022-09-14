@@ -131,7 +131,7 @@ Special commands:
                 (t (setq ov (make-overlay bol eol))
                    (overlay-put ov 'face face)
                    (overlay-put ov 'hff-changed t)
-                   (overlay-put ov 'priority 0)
+                   (overlay-put ov 'priority -1)
                    (overlay-put ov 'evaporate t)))
           ;; When text is modified with something else than
           ;; self-insert-command e.g. yank or iedit-rect, it loose its
