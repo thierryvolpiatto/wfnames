@@ -54,13 +54,15 @@
   "Backup files before overwriting when non nil."
   :type 'boolean)
 
-(defface wfnames-modified '((t :background "LightBlue"))
+(defface wfnames-modified
+    '((t :background "LightBlue" :foreground "black"))
   "Face used when filename is modified.")
 
-(defface wfnames-modified-exists '((t :background "DarkOrange"))
+(defface wfnames-modified-exists
+    '((t :background "DarkOrange" :foreground "black"))
   "Face used when modified fname point to an existing file.")
 
-(defface wfnames-files '((t :foreground "RoyalBlue"))
+(defface wfnames-files '((t :foreground "DeepSkyBlue"))
   "Face used to display filenames in wfnames buffer.")
 
 (defface wfnames-dir '((t :background "White" :foreground "red"))
