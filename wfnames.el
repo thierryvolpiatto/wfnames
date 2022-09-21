@@ -81,6 +81,9 @@
     (define-key map (kbd "C-c R")   #'wfnames-revert-changes)
     (define-key map (kbd "C-c C-k") #'wfnames-abort)
     (define-key map (kbd "TAB")     #'completion-at-point)
+    ;; This override ispell completion in iedit map which is useless
+    ;; here.
+    (define-key map (kbd "C-M-i")   #'completion-at-point)
     map))
 
 (defun wfnames-capf ()
