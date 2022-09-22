@@ -87,6 +87,7 @@
     map))
 
 (defun wfnames-capf ()
+  "Provide filename completion in wfnames buffer."
   (let ((beg (point-at-bol))
         (end (point)))
     (list beg end #'completion-file-name-table
@@ -106,10 +107,12 @@ Special commands:
   (set (make-local-variable 'completion-at-point-functions) #'wfnames-capf))
 
 (defun wfnames-abort ()
+  "Quit and kill wfnames buffer."
   (interactive)
   (quit-window t))
 
 (defun wfnames-after-change-hook (beg end _len)
+  "Put overlay on current line when modified."
   (with-current-buffer wfnames-buffer
     (save-excursion
       (save-match-data
@@ -146,6 +149,7 @@ Special commands:
 
 (cl-defun wfnames-setup-buffer (files
                                 &optional (display-fn #'switch-to-buffer))
+  "Initialize wfnames buffer with FILES and display it with DISPLAY-FN."
   (with-current-buffer (get-buffer-create wfnames-buffer)
     (erase-buffer)
     (save-excursion
@@ -165,12 +169,14 @@ Special commands:
     (funcall display-fn wfnames-buffer)))
 
 (defun wfnames-ask-for-overwrite (file)
+  "Ask before overwriting FILE."
   (or (null wfnames-interactive-rename)
       (y-or-n-p
        (format "File `%s' exists, overwrite? "
                file))))
 
 (defun wfnames-maybe-backup (file)
+  "Backup FILE."
   (when wfnames-make-backup
     (with-current-buffer (find-file-noselect file)
       (let ((backup-by-copying t))
@@ -178,6 +184,7 @@ Special commands:
       (kill-buffer))))
 
 (defun wfnames-commit-buffer ()
+  "Commit wfnames buffer when changes are done."
   (interactive)
   (let ((renamed 0) (skipped 0) delayed overwrites)
     (cl-labels ((commit ()
@@ -248,6 +255,7 @@ Special commands:
       (funcall wfnames-after-commit-function wfnames-buffer))))
 
 (defun wfnames-revert-changes ()
+  "Revert wfnames buffer to its initial state."
   (interactive)
   (with-current-buffer wfnames-buffer
     (cl-loop for o in (overlays-in (point-min) (point-max))
