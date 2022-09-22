@@ -1,4 +1,4 @@
-;;; wfnames.el --- Edit marked files. -*- lexical-binding:t -*-
+;;; wfnames.el --- Edit filnames -*- lexical-binding:t -*-
 
 ;; Author: Thierry Volpiatto <thierry.volpiatto@gmail.com>
 ;; Copyright (C) 2022 Thierry Volpiatto, all rights reserved.
