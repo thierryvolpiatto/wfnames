@@ -78,7 +78,7 @@
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-c") #'wfnames-commit-buffer)
     (define-key map (kbd "C-x C-s") #'wfnames-commit-buffer)
-    (define-key map (kbd "C-c R")   #'wfnames-revert-changes)
+    (define-key map (kbd "C-c C-r") #'wfnames-revert-changes)
     (define-key map (kbd "C-c C-k") #'wfnames-abort)
     (define-key map (kbd "TAB")     #'completion-at-point)
     ;; This override ispell completion in iedit map which is useless
