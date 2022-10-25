@@ -2,9 +2,30 @@
 
 Allows editing filenames.
 
+* Features
+
+Allows editing lists of absolute files, this allows editing the
+directory parts as well.
+
+Modified lines are highlighted, maybe in a different color when about
+to overwrite an existing file.
+
+File completion is provided.
+
+Not tighted to a directory, allows editing files from various
+directories.
+
+Do not provide edition of permissions and will not.
+
+* Motivation
+
+Wdired must be patched to allow editing a list of absolute filenames
+in Emacs versions before Emacs-29.
+Only Helm is doing this.
+
 * Install
 
-This package have no user interface, but you can easily use it in Helm
+This package have no user interface, but you can easily use it with Helm
 by defining yourself action and command for helm-find-files:
 
 #+begin_src elisp
