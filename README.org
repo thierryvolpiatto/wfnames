@@ -29,21 +29,25 @@ This package have no user interface, but you can easily use it with Helm
 by defining yourself action and command for helm-find-files:
 
 #+begin_src elisp
-  (defun helm-ff-wfnames (_candidate)
-    (let ((marked (helm-marked-candidates :with-wildcard t)))
-      (wfnames-setup-buffer marked)))
+  (use-package helm-files
+    :config
+    (defun helm-ff-wfnames (_candidate)
+      (let ((marked (helm-marked-candidates :with-wildcard t)))
+        (wfnames-setup-buffer marked)))
 
-  (helm-make-command-from-action helm-run-wfnames
-      "Run wfnames from HFF."
-    'helm-ff-wfnames)
-  (define-key helm-find-files-map (kbd "C-x C-q") 'helm-run-wfnames)
-  
-  (use-package wfnames
-      :config
+    (helm-make-command-from-action helm-run-wfnames
+        "Run wfnames from HFF."
+      'helm-ff-wfnames)
+    (define-key helm-find-files-map (kbd "C-x C-q") 'helm-run-wfnames)
+
     (setq helm-find-files-actions
           (helm-append-at-nth
            helm-find-files-actions
-           '(("Edit filename(s)" . helm-ff-wfnames)) 2)
-          wfnames-create-parent-directories t
+           '(("Edit filename(s)" . helm-ff-wfnames)) 2)))
+
+  (use-package wfnames
+      :commands 'wfnames-setup-buffer
+      :config
+    (setq wfnames-create-parent-directories t
           wfnames-interactive-rename nil))
 #+end_src
