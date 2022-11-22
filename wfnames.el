@@ -147,6 +147,7 @@ Special commands:
           (put-text-property beg end 'face 'wfnames-files)
           (put-text-property beg end 'old-name old))))))
 
+;;;###autoload
 (cl-defun wfnames-setup-buffer (files
                                 &optional (display-fn #'switch-to-buffer))
   "Initialize wfnames buffer with FILES and display it with DISPLAY-FN."
