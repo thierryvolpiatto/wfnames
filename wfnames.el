@@ -1,6 +1,6 @@
 ;;; wfnames.el --- Edit filnames -*- lexical-binding:t -*-
 
-;; Author: Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;; Author: Thierry Volpiatto <thievol@posteo.net>
 ;; Copyright (C) 2022 Thierry Volpiatto, all rights reserved.
 ;; X-URL: https://github.com/thierryvolpiatto/wfnames
 
