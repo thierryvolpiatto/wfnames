@@ -2,10 +2,11 @@
 
 ;; Author: Thierry Volpiatto <thievol@posteo.net>
 ;; Copyright (C) 2022 Thierry Volpiatto, all rights reserved.
-;; X-URL: https://github.com/thierryvolpiatto/wfnames
+;; URL: https://github.com/thierryvolpiatto/wfnames
 
 ;; Compatibility: GNU Emacs 24.1+
-;; Package-Requires: ((emacs "24") (cl-lib "0.5"))
+;; Package-Requires: ((emacs "24.3") (cl-lib "0.5"))
+;; Version: 1.0
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -25,8 +26,6 @@
 ;; A mode to edit filenames, similar to wdired.
 
 ;;; Code:
-
-(require 'cl-lib)
 
 ;; Internal.
 (defvar wfnames-buffer "*Wfnames*")
@@ -112,7 +111,8 @@ Special commands:
   (quit-window t))
 
 (defun wfnames-after-change-hook (beg end _len)
-  "Put overlay on current line when modified."
+  "Put overlay on current line when modified.
+Args BEG and END delimit changes on line."
   (with-current-buffer wfnames-buffer
     (save-excursion
       (save-match-data
