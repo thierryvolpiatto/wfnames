@@ -1,11 +1,11 @@
-;;; wfnames.el --- Edit filnames -*- lexical-binding:t -*-
+;;; wfnames.el --- Edit filenames -*- lexical-binding:t -*-
 
 ;; Author: Thierry Volpiatto <thievol@posteo.net>
 ;; Copyright (C) 2022 Thierry Volpiatto, all rights reserved.
 ;; URL: https://github.com/thierryvolpiatto/wfnames
 
-;; Compatibility: GNU Emacs 24.1+
-;; Package-Requires: ((emacs "24.3") (cl-lib "0.5"))
+;; Compatibility: GNU Emacs 24.3+"
+;; Package-Requires: ((emacs "24.3"))
 ;; Version: 1.0
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,8 @@
 ;; A mode to edit filenames, similar to wdired.
 
 ;;; Code:
+
+(require 'cl-lib)
 
 ;; Internal.
 (defvar wfnames-buffer "*Wfnames*")
