@@ -21,33 +21,21 @@ Do not provide edition of permissions and will not.
 
 Wdired must be patched to allow editing a list of absolute filenames
 in Emacs versions before Emacs-29.
-Only Helm is doing this.
+Also Wdired depends on a default directory which is not relevant and
+prone to errors when editing absolute filenames that come from various
+directories.
+Using this package in Helm allows getting rid of Wdired advices (that have
+been merged in Emacs-29+).
 
 * Install
 
-This package have no user interface, but you can easily use it with Helm
-by defining yourself action and command for helm-find-files:
+This package have no user interface, but you can easily use it with
+[[https://github.com/emacs-helm/helm][Helm]] package by customizing =helm-ff-edit-marked-files-fn= variable.
+If you are not using [[https://github.com/emacs-helm/helm][Helm]] you will have to define yourself a function
+that call =wfnames-setup-buffer= with a list of files as argument.
 
-#+begin_src elisp
-  (use-package helm-files
-    :config
-    (defun helm-ff-wfnames (_candidate)
-      (let ((marked (helm-marked-candidates :with-wildcard t)))
-        (wfnames-setup-buffer marked)))
+* Usage
 
-    (helm-make-command-from-action helm-run-wfnames
-        "Run wfnames from HFF."
-      'helm-ff-wfnames)
-    (define-key helm-find-files-map (kbd "C-x C-q") 'helm-run-wfnames)
-
-    (setq helm-find-files-actions
-          (helm-append-at-nth
-           helm-find-files-actions
-           '(("Edit filename(s)" . helm-ff-wfnames)) 2)))
-
-  (use-package wfnames
-      :commands 'wfnames-setup-buffer
-      :config
-    (setq wfnames-create-parent-directories t
-          wfnames-interactive-rename nil))
-#+end_src
+Once in the Wfnames buffer, edit your filenames and hit =C-c C-c= to
+save your changes. You have completion on filenames and directories
+with =TAB= but if you are using [[https://github.com/victorhge/iedit][Iedit]] package and it is in action use =M-TAB=.
