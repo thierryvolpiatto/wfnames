@@ -163,11 +163,15 @@ Args BEG and END delimit changes on line."
 
 ;;;###autoload
 (cl-defun wfnames-setup-buffer (files
-                                &optional (display-fn #'switch-to-buffer))
-  "Initialize wfnames buffer with FILES and display it with DISPLAY-FN."
+                                &optional (display-fn #'switch-to-buffer) append)
+  "Initialize wfnames buffer with FILES and display it with DISPLAY-FN.
+
+Arg DISPLAY-FN default to `switch-to-buffer' if unspecified.
+When APPEND is specified, append FILES to existing `wfnames-buffer'."
   (with-current-buffer (get-buffer-create wfnames-buffer)
-    (erase-buffer)
+    (unless append (erase-buffer))
     (save-excursion
+      (when append (goto-char (point-max)))
       (cl-loop for file in files
                for face = (cond ((file-directory-p file) 'wfnames-dir)
                                 ((file-symlink-p file) 'wfnames-symlink)
@@ -177,11 +181,13 @@ Args BEG and END delimit changes on line."
                            'line-prefix (propertize
                                          "* "
                                          'face 'wfnames-prefix))
-                          "\n")))
-    ;; Go to beginning of basename on first line.
-    (while (re-search-forward "/" (point-at-eol) t))
-    (wfnames-mode)
-    (funcall display-fn wfnames-buffer)))
+                          "\n"))
+      (when append (delete-duplicate-lines (point-min) (point-max))))
+    (unless append
+      ;; Go to beginning of basename on first line.
+      (while (re-search-forward "/" (point-at-eol) t))
+      (wfnames-mode)
+      (funcall display-fn wfnames-buffer))))
 
 (defun wfnames-ask-for-overwrite (file)
   "Ask before overwriting FILE."
