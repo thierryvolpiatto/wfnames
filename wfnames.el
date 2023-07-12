@@ -278,13 +278,11 @@ When APPEND is specified, append FILES to existing `wfnames-buffer'."
       (funcall wfnames-after-commit-function wfnames-buffer))))
 
 (defun wfnames-revert-current-line-1 ()
-  "Revert current line to its initial state in a wfnames buffer.
-
-With a numeric prefix ARG, revert the ARG next lines."
+  "Revert current line to its initial state in a wfnames buffer."
   (let ((old (get-text-property (point) 'old-name))
         (new (buffer-substring-no-properties
               (point-at-bol) (point-at-eol))))
-    (unless (string= old new)
+    (unless (and old new (string= old new))
       (delete-region (point-at-bol) (point-at-eol))
       (insert (propertize
                old 'old-name old 'face 'wfnames-file
