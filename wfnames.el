@@ -91,7 +91,8 @@
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-c") #'wfnames-commit-buffer)
     (define-key map (kbd "C-x C-s") #'wfnames-commit-buffer)
-    (define-key map (kbd "C-c C-r") #'wfnames-revert-changes)
+    (define-key map (kbd "C-c C-r") #'wfnames-revert-current-line)
+    (define-key map (kbd "C-M-r")   #'revert-buffer)
     (define-key map (kbd "C-c C-k") #'wfnames-abort)
     (define-key map (kbd "TAB")     #'completion-at-point)
     ;; This override ispell completion in iedit map which is useless
@@ -117,7 +118,8 @@ Special commands:
 \\{wfnames-mode-map}"
   (add-hook 'after-change-functions #'wfnames-after-change-hook nil t)
   (make-local-variable 'wfnames--modified)
-  (set (make-local-variable 'completion-at-point-functions) #'wfnames-capf))
+  (set (make-local-variable 'completion-at-point-functions) #'wfnames-capf)
+  (set (make-local-variable 'revert-buffer-function) #'wfnames-revert-changes))
 
 (defun wfnames-abort ()
   "Quit and kill wfnames buffer."
@@ -275,9 +277,37 @@ When APPEND is specified, append FILES to existing `wfnames-buffer'."
       (message "Renamed %s file(s), Skipped %s file(s)" renamed skipped)
       (funcall wfnames-after-commit-function wfnames-buffer))))
 
-(defun wfnames-revert-changes ()
-  "Revert wfnames buffer to its initial state."
-  (interactive)
+(defun wfnames-revert-current-line-1 ()
+  "Revert current line to its initial state in a wfnames buffer.
+
+With a numeric prefix ARG, revert the ARG next lines."
+  (let ((old (get-text-property (point) 'old-name))
+        (new (buffer-substring-no-properties
+              (point-at-bol) (point-at-eol))))
+    (unless (string= old new)
+      (delete-region (point-at-bol) (point-at-eol))
+      (insert (propertize
+               old 'old-name old 'face 'wfnames-file
+               'line-prefix (propertize
+                             "* "
+                             'face 'wfnames-prefix))))
+    (forward-line 1)))
+
+(defun wfnames-revert-current-line (&optional arg)
+  "Revert current line to its initial state in a wfnames buffer.
+
+With a numeric prefix ARG, revert the ARG next lines."
+  (interactive "p")
+  (dotimes (_ arg)
+    (wfnames-revert-current-line-1)
+    (when (eobp) (forward-line -1))
+    (goto-char (point-at-bol))
+    (while (re-search-forward "/" (point-at-eol) t))))
+
+(defun wfnames-revert-changes (_ignore-auto _no-confirm)
+  "Revert wfnames buffer to its initial state.
+
+This is used as `revert-buffer-function' for `wfnames-mode'."
   (with-current-buffer wfnames-buffer
     (cl-loop for o in (overlays-in (point-min) (point-max))
              when (overlay-get o 'hff-changed)
@@ -285,17 +315,7 @@ When APPEND is specified, append FILES to existing `wfnames-buffer'."
     (goto-char (point-min))
     (save-excursion
       (while (not (eobp))
-        (let ((old (get-text-property (point) 'old-name))
-              (new (buffer-substring-no-properties
-                    (point-at-bol) (point-at-eol))))
-          (unless (string= old new)
-            (delete-region (point-at-bol) (point-at-eol))
-            (insert (propertize
-                     old 'old-name old 'face 'wfnames-file
-                     'line-prefix (propertize
-                                   "* "
-                                   'face 'wfnames-prefix))))
-          (forward-line 1))))
+        (wfnames-revert-current-line-1)))
     (while (re-search-forward "/" (point-at-eol) t))))
 
 (provide 'wfnames)
