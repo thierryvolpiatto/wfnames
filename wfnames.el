@@ -102,7 +102,7 @@
 
 (defun wfnames-capf ()
   "Provide filename completion in wfnames buffer."
-  (let ((beg (point-at-bol))
+  (let ((beg (line-beginning-position))
         (end (point)))
     (list beg end #'completion-file-name-table
           :exit-function (lambda (str _status)
@@ -133,8 +133,8 @@ Args BEG and END delimit changes on line."
     (save-excursion
       (save-match-data
         (goto-char beg)
-        (let* ((bol (point-at-bol))
-               (eol (point-at-eol))
+        (let* ((bol (line-beginning-position))
+               (eol (line-end-position))
                (old (get-text-property bol 'old-name))
                (new (buffer-substring-no-properties bol eol))
                ov face)
@@ -187,7 +187,7 @@ When APPEND is specified, append FILES to existing `wfnames-buffer'."
       (when append (delete-duplicate-lines (point-min) (point-max))))
     (unless append
       ;; Go to beginning of basename on first line.
-      (while (re-search-forward "/" (point-at-eol) t))
+      (while (re-search-forward "/" (line-end-position) t))
       (wfnames-mode)
       (funcall display-fn wfnames-buffer))))
 
@@ -214,8 +214,8 @@ When APPEND is specified, append FILES to existing `wfnames-buffer'."
                   (with-current-buffer wfnames-buffer
                     (goto-char (point-min))
                     (while (not (eobp))
-                      (let* ((beg (point-at-bol))
-                             (end (point-at-eol))
+                      (let* ((beg (line-beginning-position))
+                             (end (line-end-position))
                              (old (get-text-property (point) 'old-name))
                              (new (buffer-substring-no-properties beg end))
                              ow)
@@ -281,9 +281,9 @@ When APPEND is specified, append FILES to existing `wfnames-buffer'."
   "Revert current line to its initial state in a wfnames buffer."
   (let ((old (get-text-property (point) 'old-name))
         (new (buffer-substring-no-properties
-              (point-at-bol) (point-at-eol))))
+              (line-beginning-position) (line-end-position))))
     (unless (and old new (string= old new))
-      (delete-region (point-at-bol) (point-at-eol))
+      (delete-region (line-beginning-position) (line-end-position))
       (insert (propertize
                old 'old-name old 'face 'wfnames-file
                'line-prefix (propertize
@@ -299,8 +299,8 @@ With a numeric prefix ARG, revert the ARG next lines."
   (dotimes (_ arg)
     (wfnames-revert-current-line-1)
     (when (eobp) (forward-line -1))
-    (goto-char (point-at-bol))
-    (while (re-search-forward "/" (point-at-eol) t))))
+    (goto-char (line-beginning-position))
+    (while (re-search-forward "/" (line-end-position) t))))
 
 (defun wfnames-revert-changes (_ignore-auto _no-confirm)
   "Revert wfnames buffer to its initial state.
@@ -314,7 +314,7 @@ This is used as `revert-buffer-function' for `wfnames-mode'."
     (save-excursion
       (while (not (eobp))
         (wfnames-revert-current-line-1)))
-    (while (re-search-forward "/" (point-at-eol) t))))
+    (while (re-search-forward "/" (line-end-position) t))))
 
 (provide 'wfnames)
 
