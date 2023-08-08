@@ -255,7 +255,7 @@ When APPEND is specified, append FILES to existing `wfnames-buffer'."
                                    (let ((basedir (file-name-directory
                                                    (directory-file-name new))))
                                      (unless (file-directory-p basedir)
-                                       (mkdir basedir 'parents))))
+                                       (make-directory basedir 'parents))))
                                  (if (and ow (wfnames-ask-for-overwrite new))
                                      ;; Direct overwrite i.e. first loop.
                                      (progn
