@@ -42,8 +42,8 @@
 (eval-when-compile (require 'cl-lib))
 
 ;; Internal.
-(defvar wfnames-buffer "*Wfnames*")
-(defvar wfnames--modified nil)
+(defconst wfnames-buffer "*Wfnames*")
+(defvar-local wfnames--modified nil)
 
 (defgroup wfnames nil
   "A mode to edit filenames."
@@ -117,9 +117,8 @@
 Special commands:
 \\{wfnames-mode-map}"
   (add-hook 'after-change-functions #'wfnames-after-change-hook nil t)
-  (make-local-variable 'wfnames--modified)
-  (set (make-local-variable 'completion-at-point-functions) #'wfnames-capf)
-  (set (make-local-variable 'revert-buffer-function) #'wfnames-revert-changes))
+  (setq-local completion-at-point-functions #'wfnames-capf)
+  (setq-local revert-buffer-function #'wfnames-revert-changes))
 
 (defun wfnames-abort ()
   "Quit and kill wfnames buffer."
