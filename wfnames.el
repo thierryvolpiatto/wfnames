@@ -106,8 +106,6 @@
   "Provide filename completion in wfnames buffer."
   (let ((beg (line-beginning-position))
         (end (point)))
-    ;; FIXME: Does it make sense to extend beyond END to allow completing
-    ;; file names mid-string?
     (list beg end #'completion-file-name-table
           :exit-function (lambda (str _status)
                              (when (and (stringp str)
