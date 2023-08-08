@@ -4,8 +4,8 @@
 ;; Copyright (C) 2022 Thierry Volpiatto, all rights reserved.
 ;; URL: https://github.com/thierryvolpiatto/wfnames
 
-;; Compatibility: GNU Emacs 24.3+"
-;; Package-Requires: ((emacs "24.3"))
+;; Compatibility: GNU Emacs 24.4+"
+;; Package-Requires: ((emacs "24.4"))
 ;; Version: 1.1
 
 ;; This program is free software; you can redistribute it and/or modify
