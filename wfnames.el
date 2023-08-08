@@ -188,7 +188,7 @@ When APPEND is specified, append FILES to existing `wfnames-buffer'."
       (when append (delete-duplicate-lines (point-min) (point-max))))
     (unless append
       ;; Go to beginning of basename on first line.
-      (while (re-search-forward "/" (line-end-position) t))
+      (re-search-forward "\\(?:/[^/]*\\)*/" (line-end-position) t)
       (wfnames-mode)
       (funcall display-fn wfnames-buffer))))
 
@@ -301,7 +301,7 @@ With a numeric prefix ARG, revert the ARG next lines."
     (wfnames-revert-current-line-1)
     (when (eobp) (forward-line -1))
     (goto-char (line-beginning-position))
-    (while (re-search-forward "/" (line-end-position) t))))
+    (re-search-forward "\\(?:/[^/]*\\)*/" (line-end-position) t)))
 
 (defun wfnames-revert-changes (_ignore-auto _no-confirm)
   "Revert wfnames buffer to its initial state.
@@ -315,7 +315,8 @@ This is used as `revert-buffer-function' for `wfnames-mode'."
     (save-excursion
       (while (not (eobp))
         (wfnames-revert-current-line-1)))
-    (while (re-search-forward "/" (line-end-position) t))))
+    (re-search-forward "\\(?:/[^/]*\\)*/" (line-end-position) t)))
+
 
 (provide 'wfnames)
 
