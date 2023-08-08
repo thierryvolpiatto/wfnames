@@ -39,7 +39,7 @@
 
 ;;; Code:
 
-(require 'cl-lib)
+(eval-when-compile (require 'cl-lib))
 
 ;; Internal.
 (defvar wfnames-buffer "*Wfnames*")
