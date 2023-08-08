@@ -47,7 +47,7 @@
 
 (defgroup wfnames nil
   "A mode to edit filenames."
-  :group 'wfnames)
+  :group 'convenience)
 
 (defcustom wfnames-create-parent-directories t
   "Create parent directories when non nil."
