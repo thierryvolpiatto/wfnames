@@ -34,7 +34,7 @@
 
 ;; Usage:
 ;; Once in the Wfnames buffer, edit your filenames and hit C-c C-c to
-;; save your changes. You have completion on filenames and directories
+;; save your changes.  You have completion on filenames and directories
 ;; with TAB but if you are using Iedit package and it is in action use =M-TAB=.
 
 ;;; Code:
@@ -66,7 +66,7 @@
   :type 'function)
 
 (defcustom wfnames-make-backup nil
-  "Backup files before overwriting when non nil."
+  "Non-nil means files are backed up before overwriting."
   :type 'boolean)
 
 (defface wfnames-modified
@@ -112,8 +112,7 @@
                                         (eq (char-after) ?/))
                                (delete-char -1))))))
 
-(define-derived-mode wfnames-mode
-    text-mode "wfnames"
+(define-derived-mode wfnames-mode text-mode "wfnames"
     "Major mode to edit filenames.
 
 Special commands:
@@ -138,9 +137,10 @@ Args BEG and END delimit changes on line."
                (eol (line-end-position))
                (old (get-text-property bol 'old-name))
                (new (buffer-substring-no-properties bol eol))
-               ov face)
-          (setq face (if (file-exists-p new)
-                         'wfnames-modified-exists 'wfnames-modified))
+               (face (if (file-exists-p new)
+                         'wfnames-modified-exists
+		       'wfnames-modified))
+	       ov)
           (setq-local wfnames--modified
                       (cons old (delete old wfnames--modified)))
           (cl-loop for o in (overlays-in bol eol)
@@ -308,9 +308,9 @@ With a numeric prefix ARG, revert the ARG next lines."
 
 This is used as `revert-buffer-function' for `wfnames-mode'."
   (with-current-buffer wfnames-buffer
-    (cl-loop for o in (overlays-in (point-min) (point-max))
-             when (overlay-get o 'hff-changed)
-             do (delete-overlay o))
+    (dolist (o (overlays-in (point-min) (point-max)))
+      (when (overlay-get o 'hff-changed)
+	(delete-overlay o)))
     (goto-char (point-min))
     (save-excursion
       (while (not (eobp))
