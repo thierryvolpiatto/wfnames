@@ -57,7 +57,9 @@
   "Ask confirmation when overwriting."
   :type 'boolean)
 
-(defvar wfnames-after-commit-hook nil)
+(defcustom wfnames-after-commit-hook nil
+  "Hook that run after `wfnames-commit-buffer'."
+  :type 'hook)
 
 (defcustom wfnames-after-commit-function #'kill-buffer
   "A function to call on `wfnames-buffer' when done."
