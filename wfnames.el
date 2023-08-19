@@ -100,6 +100,8 @@
     ;; This override ispell completion in iedit map which is useless
     ;; here.
     (define-key map (kbd "C-M-i")   #'completion-at-point)
+    (define-key map (kbd "M-p")     #'wfnames-move-line-up)
+    (define-key map (kbd "M-n")     #'wfnames-move-line-down)
     map))
 
 (defun wfnames-capf ()
@@ -317,6 +319,26 @@ This is used as `revert-buffer-function' for `wfnames-mode'."
         (wfnames-revert-current-line-1)))
     (re-search-forward "\\(?:/[^/]*\\)*/" (line-end-position) t)))
 
+(defun wfnames-move-line-1 (arg)
+  "Move line one line down or up according to ARG.
+ARG can be 1 for down or -1 for up."
+  (beginning-of-line)
+  (let* ((next (+ 1 (line-end-position)))
+         (line (buffer-substring (point) next)))
+    (delete-region (point) next)
+    (forward-line arg)
+    (insert line)
+    (forward-line -1)))
+
+(defun wfnames-move-line-down ()
+  "Move line one line down."
+  (interactive)
+  (wfnames-move-line-1 1))
+
+(defun wfnames-move-line-up ()
+  "Move line one line up."
+  (interactive)
+  (wfnames-move-line-1 -1))
 
 (provide 'wfnames)
 
