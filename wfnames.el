@@ -192,8 +192,8 @@ When APPEND is specified, append FILES to existing `wfnames-buffer'."
     (unless append
       ;; Go to beginning of basename on first line.
       (re-search-forward "\\(?:/[^/]*\\)*/" (line-end-position) t)
-      (wfnames-mode)
-      (funcall display-fn wfnames-buffer))))
+      (wfnames-mode))
+    (funcall display-fn wfnames-buffer)))
 
 (defun wfnames-ask-for-overwrite (file)
   "Ask before overwriting FILE."
